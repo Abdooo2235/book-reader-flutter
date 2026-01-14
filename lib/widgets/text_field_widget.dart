@@ -7,6 +7,7 @@ class TextFieldWidget extends StatelessWidget {
     super.key,
     required this.controller,
     this.label,
+    this.hintText,
     this.horizontalPadding = 16,
     this.verticalPadding = 8,
     required this.validator,
@@ -18,6 +19,7 @@ class TextFieldWidget extends StatelessWidget {
   });
   final TextEditingController controller;
   final String? label;
+  final String? hintText;
   final double horizontalPadding;
   final double verticalPadding;
   final FormFieldValidator<String> validator;
@@ -53,25 +55,39 @@ class TextFieldWidget extends StatelessWidget {
             controller: controller,
             keyboardType: keyboardType,
             decoration: InputDecoration(
+              hintText: hintText,
+              hintStyle: bodyMedium.copyWith(color: Colors.grey[400]),
+              filled: true,
+              fillColor: Colors.white,
               suffixIcon: suffixWidget,
               prefixIcon: prefixWidget,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 16,
+              ),
               border: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey),
-                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(borderRadiusMedium),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(borderRadiusMedium),
               ),
               focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: primaryColor),
-
-                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: primaryColor, width: 2),
+                borderRadius: BorderRadius.circular(borderRadiusMedium),
               ),
               errorBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.red),
-
-                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: redColor),
+                borderRadius: BorderRadius.circular(borderRadiusMedium),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: redColor, width: 2),
+                borderRadius: BorderRadius.circular(borderRadiusMedium),
               ),
               disabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey),
-                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: Colors.grey[300]!),
+                borderRadius: BorderRadius.circular(borderRadiusMedium),
               ),
             ),
           ),

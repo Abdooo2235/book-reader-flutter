@@ -1,5 +1,4 @@
 import 'package:book_reader_app/helpers/consts.dart';
-import 'package:book_reader_app/helpers/helper_functions.dart';
 import 'package:book_reader_app/providers/auth_provider.dart';
 import 'package:book_reader_app/screens/main/cart_screen.dart';
 import 'package:book_reader_app/screens/main/favourite_screen.dart';
@@ -8,8 +7,6 @@ import 'package:book_reader_app/screens/main/library_screen.dart';
 import 'package:book_reader_app/screens/main/profile_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
 class TabsScreen extends StatefulWidget {
@@ -37,12 +34,7 @@ class _TabsScreenState extends State<TabsScreen> {
           // drawer: CustomDrawer(),
           appBar: AppBar(
             backgroundColor: scaffoldBackgroundColor,
-            centerTitle: true,
-            // title: SvgPicture.asset(
-            //   "assets/images/book_logo.svg",
-            //   width: getSize(context).width * 0.3,
-            //   fit: BoxFit.cover,
-            // ),
+            toolbarHeight: 0,
           ),
           body: IndexedStack(index: currentIndex, children: screens),
           bottomNavigationBar: Container(
