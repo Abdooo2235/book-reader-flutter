@@ -33,12 +33,12 @@ class CartItem extends StatelessWidget {
         color: whiteColor,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: primaryColor.withOpacity(0.2),
+          color: primaryColor.withValues(alpha: 0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withOpacity(0.1),
+            color: primaryColor.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
             spreadRadius: 0,
@@ -61,16 +61,16 @@ class CartItem extends StatelessWidget {
                       return Container(
                         width: 80,
                         height: 120,
-                        color: primaryColor.withOpacity(0.1),
-                        child: Icon(Icons.book, color: primaryColor.withOpacity(0.5), size: 40),
+                        color: primaryColor.withValues(alpha: 0.1),
+                        child: Icon(Icons.book, color: primaryColor.withValues(alpha: 0.5), size: 40),
                       );
                     },
                   )
                 : Container(
                     width: 80,
                     height: 120,
-                    color: primaryColor.withOpacity(0.1),
-                    child: Icon(Icons.book, color: primaryColor.withOpacity(0.5), size: 40),
+                    color: primaryColor.withValues(alpha: 0.1),
+                    child: Icon(Icons.book, color: primaryColor.withValues(alpha: 0.5), size: 40),
                   ),
           ),
 
@@ -94,7 +94,7 @@ class CartItem extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: bodySmall.copyWith(
-                    color: primaryColor.withOpacity(0.7),
+                    color: primaryColor.withValues(alpha: 0.7),
                     fontSize: 12,
                   ),
                 ),

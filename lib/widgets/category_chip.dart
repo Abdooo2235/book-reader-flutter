@@ -35,7 +35,7 @@ class _CategoryChipState extends State<CategoryChip> {
           boxShadow: [
             if (widget.isSelected)
               BoxShadow(
-                color: primaryColor.withOpacity(0.3),
+                color: primaryColor.withValues(alpha: 0.3),
                 blurRadius: 5,
                 offset: const Offset(0, 3),
               ),

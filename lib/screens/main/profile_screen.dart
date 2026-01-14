@@ -18,12 +18,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Load user profile and preferences on init
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final preferencesProvider = Provider.of<PreferencesProvider>(context, listen: false);
-      
-      if (authProvider.user == null && authProvider.status == AuthStatus.authenticated) {
+      final preferencesProvider = Provider.of<PreferencesProvider>(
+        context,
+        listen: false,
+      );
+
+      if (authProvider.user == null &&
+          authProvider.status == AuthStatus.authenticated) {
         authProvider.loadCurrentUser();
       }
-      
+
       if (authProvider.status == AuthStatus.authenticated) {
         preferencesProvider.loadPreferences();
       }
@@ -35,284 +39,292 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Consumer2<AuthProvider, PreferencesProvider>(
       builder: (context, authProvider, preferencesProvider, _) {
         final userName = authProvider.user?['name']?.toString() ?? 'User';
-        final userEmail = authProvider.user?['email']?.toString() ?? 'user@example.com';
+        final userEmail =
+            authProvider.user?['email']?.toString() ?? 'user@example.com';
         final isDarkMode = preferencesProvider.theme == 'dark';
-        
+
         return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Header with Profile Picture
-            Container(
-              padding: const EdgeInsets.only(top: 40, bottom: 30),
-              child: Column(
-                children: [
-                  Stack(
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                // Header with Profile Picture
+                Container(
+                  padding: const EdgeInsets.only(top: 40, bottom: 30),
+                  child: Column(
                     children: [
+                      Stack(
+                        children: [
+                          Container(
+                            width: 120,
+                            height: 120,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: primaryColor, width: 3),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: primaryColor.withValues(alpha: 0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: CircleAvatar(
+                              radius: 57,
+                              backgroundColor: primaryColor.withValues(
+                                alpha: 0.1,
+                              ),
+                              child: Icon(
+                                Icons.person,
+                                size: 60,
+                                color: primaryColor,
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: primaryColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: whiteColor, width: 2),
+                              ),
+                              child: IconButton(
+                                padding: EdgeInsets.zero,
+                                icon: const Icon(
+                                  Icons.camera_alt,
+                                  size: 18,
+                                  color: Colors.white,
+                                ),
+                                onPressed: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Profile picture upload coming soon',
+                                        style: bodyMedium.copyWith(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      backgroundColor: primaryColor,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        userName,
+                        style: labelLarge.copyWith(color: blackColor),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        userEmail,
+                        style: bodyMedium.copyWith(color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Divider(
+                  color: primaryColor.withValues(alpha: 0.2),
+                  thickness: 0.5,
+                ),
+
+                // Profile Options
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  child: Column(
+                    children: [
+                      // Change Name
+                      _buildProfileOption(
+                        icon: Icons.person_outline,
+                        title: 'Change Name',
+                        subtitle: userName,
+                        onTap: () {
+                          // TODO: Show dialog to change name
+                          _showChangeNameDialog();
+                        },
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Change Password
+                      _buildProfileOption(
+                        icon: Icons.lock_outline,
+                        title: 'Change Password',
+                        subtitle: 'Update your password',
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Change password feature coming soon',
+                                style: bodyMedium.copyWith(color: Colors.white),
+                              ),
+                              backgroundColor: primaryColor,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Light/Dark Mode
                       Container(
-                        width: 120,
-                        height: 120,
                         decoration: BoxDecoration(
-                          shape: BoxShape.circle,
+                          color: whiteColor,
+                          borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: primaryColor,
-                            width: 3,
+                            color: primaryColor.withValues(alpha: 0.2),
+                            width: 1,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: primaryColor.withOpacity(0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
+                              color: primaryColor.withValues(alpha: 0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),
-                        child: CircleAvatar(
-                          radius: 57,
-                          backgroundColor: primaryColor.withOpacity(0.1),
-                          child: Icon(
-                            Icons.person,
-                            size: 60,
-                            color: primaryColor,
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: primaryColor,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: whiteColor,
-                              width: 2,
+                        child: ListTile(
+                          leading: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: primaryColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                              color: primaryColor,
                             ),
                           ),
-                          child: IconButton(
-                            padding: EdgeInsets.zero,
-                            icon: const Icon(
-                              Icons.camera_alt,
-                              size: 18,
-                              color: Colors.white,
-                            ),
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Profile picture upload coming soon',
-                                    style: bodyMedium.copyWith(color: Colors.white),
-                                  ),
-                                  backgroundColor: primaryColor,
-                                ),
-                              );
+                          title: Text(
+                            'Theme Mode',
+                            style: labelSmall.copyWith(color: blackColor),
+                          ),
+                          subtitle: Text(
+                            isDarkMode ? 'Dark Mode' : 'Light Mode',
+                            style: bodySmall.copyWith(color: Colors.grey[600]),
+                          ),
+                          trailing: Switch(
+                            value: isDarkMode,
+                            onChanged: (value) async {
+                              final preferencesProvider =
+                                  Provider.of<PreferencesProvider>(
+                                    context,
+                                    listen: false,
+                                  );
+
+                              try {
+                                await preferencesProvider.updatePreferences(
+                                  theme: value ? 'dark' : 'light',
+                                );
+
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.check_circle,
+                                            color: Colors.white,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              'Theme updated successfully',
+                                              style: bodyMedium.copyWith(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      backgroundColor: greenColor,
+                                      behavior: SnackBarBehavior.floating,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      margin: const EdgeInsets.all(16),
+                                    ),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.error_outline,
+                                            color: Colors.white,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              preferencesProvider
+                                                      .errorMessage ??
+                                                  'Failed to update theme',
+                                              style: bodyMedium.copyWith(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      backgroundColor: redColor,
+                                      behavior: SnackBarBehavior.floating,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      margin: const EdgeInsets.all(16),
+                                    ),
+                                  );
+                                }
+                              }
                             },
+                            activeThumbColor: primaryColor,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    userName,
-                    style: labelLarge.copyWith(
-                      color: blackColor,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    userEmail,
-                    style: bodyMedium.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                ),
 
-            Divider(color: primaryColor.withOpacity(0.2), thickness: 0.5),
+                const SizedBox(height: 24),
 
-            // Profile Options
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Column(
-                children: [
-                  // Change Name
-                  _buildProfileOption(
-                    icon: Icons.person_outline,
-                    title: 'Change Name',
-                    subtitle: userName,
-                    onTap: () {
-                      // TODO: Show dialog to change name
-                      _showChangeNameDialog();
-                    },
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Change Password
-                  _buildProfileOption(
-                    icon: Icons.lock_outline,
-                    title: 'Change Password',
-                    subtitle: 'Update your password',
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Change password feature coming soon',
-                            style: bodyMedium.copyWith(color: Colors.white),
-                          ),
-                          backgroundColor: primaryColor,
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 12),
-
-                  // Light/Dark Mode
-                  Container(
-                    decoration: BoxDecoration(
-                      color: whiteColor,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: primaryColor.withOpacity(0.2),
-                        width: 1,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: primaryColor.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: ListTile(
-                      leading: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                          color: primaryColor,
+                // Logout Button
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () => _handleLogout(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: BorderSide(color: redColor),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      title: Text(
-                        'Theme Mode',
-                        style: labelSmall.copyWith(
-                          color: blackColor,
-                        ),
+                      child: Text(
+                        'Logout',
+                        style: labelMedium.copyWith(color: redColor),
                       ),
-                      subtitle: Text(
-                        isDarkMode ? 'Dark Mode' : 'Light Mode',
-                        style: bodySmall.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      trailing: Switch(
-                        value: isDarkMode,
-                        onChanged: (value) async {
-                          final preferencesProvider = Provider.of<PreferencesProvider>(
-                            context,
-                            listen: false,
-                          );
-                          
-                          try {
-                            await preferencesProvider.updatePreferences(
-                              theme: value ? 'dark' : 'light',
-                            );
-                            
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Row(
-                                    children: [
-                                      const Icon(Icons.check_circle, color: Colors.white),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          'Theme updated successfully',
-                                          style: bodyMedium.copyWith(color: Colors.white),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  backgroundColor: greenColor,
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  margin: const EdgeInsets.all(16),
-                                ),
-                              );
-                            }
-                          } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Row(
-                                    children: [
-                                      const Icon(Icons.error_outline, color: Colors.white),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          preferencesProvider.errorMessage ?? 'Failed to update theme',
-                                          style: bodyMedium.copyWith(color: Colors.white),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  backgroundColor: redColor,
-                                  behavior: SnackBarBehavior.floating,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  margin: const EdgeInsets.all(16),
-                                ),
-                              );
-                            }
-                          }
-                        },
-                        activeColor: primaryColor,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Logout Button
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () => _handleLogout(context),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: BorderSide(color: redColor),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    'Logout',
-                    style: labelMedium.copyWith(
-                      color: redColor,
                     ),
                   ),
                 ),
-              ),
-            ),
 
-            const SizedBox(height: 32),
-          ],
-        ),
-      ),
-    );
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
+        );
       },
     );
   }
@@ -331,12 +343,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           color: whiteColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: primaryColor.withOpacity(0.2),
+            color: primaryColor.withValues(alpha: 0.2),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: primaryColor.withOpacity(0.1),
+              color: primaryColor.withValues(alpha: 0.1),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -346,30 +358,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.1),
+              color: primaryColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              icon,
-              color: primaryColor,
-            ),
+            child: Icon(icon, color: primaryColor),
           ),
-          title: Text(
-            title,
-            style: labelSmall.copyWith(
-              color: blackColor,
-            ),
-          ),
+          title: Text(title, style: labelSmall.copyWith(color: blackColor)),
           subtitle: Text(
             subtitle,
-            style: bodySmall.copyWith(
-              color: Colors.grey[600],
-            ),
+            style: bodySmall.copyWith(color: Colors.grey[600]),
           ),
-          trailing: Icon(
-            Icons.chevron_right,
-            color: primaryColor,
-          ),
+          trailing: Icon(Icons.chevron_right, color: primaryColor),
         ),
       ),
     );
@@ -378,8 +377,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showChangeNameDialog() {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final currentName = authProvider.user?['name']?.toString() ?? '';
-    final TextEditingController nameController =
-        TextEditingController(text: currentName);
+    final TextEditingController nameController = TextEditingController(
+      text: currentName,
+    );
 
     showDialog(
       context: context,
@@ -429,15 +429,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
               }
 
               Navigator.pop(context);
-              
+
               // Show loading
               if (context.mounted) {
                 showDialog(
                   context: context,
                   barrierDismissible: false,
-                  builder: (context) => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  builder: (context) =>
+                      const Center(child: CircularProgressIndicator()),
                 );
               }
 
@@ -481,7 +480,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              authProvider.errorMessage ?? 'Failed to update name',
+                              authProvider.errorMessage ??
+                                  'Failed to update name',
                               style: bodyMedium.copyWith(color: Colors.white),
                             ),
                           ),
@@ -515,17 +515,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          'Logout',
-          style: labelMedium.copyWith(color: blackColor),
-        ),
-        content: Text(
-          'Are you sure you want to logout?',
-          style: bodyMedium,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Logout', style: labelMedium.copyWith(color: blackColor)),
+        content: Text('Are you sure you want to logout?', style: bodyMedium),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -537,26 +529,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context); // Close dialog
-              
+
               final authProvider = Provider.of<AuthProvider>(
                 context,
                 listen: false,
               );
-              
+
               // Show loading indicator
               if (context.mounted) {
                 showDialog(
                   context: context,
                   barrierDismissible: false,
-                  builder: (context) => const Center(
-                    child: CircularProgressIndicator(),
-                  ),
+                  builder: (context) =>
+                      const Center(child: CircularProgressIndicator()),
                 );
               }
-              
+
               try {
                 await authProvider.logout();
-                
+
                 // Close loading dialog - navigation is handled by auth_provider
                 if (context.mounted && Navigator.of(context).canPop()) {
                   Navigator.of(context).pop();

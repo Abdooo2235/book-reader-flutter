@@ -67,12 +67,15 @@ class BookSearchDelegate extends SearchDelegate<Map<String, dynamic>?> {
       if (book['progress'] is num) return (book['progress'] as num).toDouble();
     }
     if (book['progress_percentage'] != null) {
-      if (book['progress_percentage'] is double)
+      if (book['progress_percentage'] is double) {
         return book['progress_percentage'];
-      if (book['progress_percentage'] is int)
+      }
+      if (book['progress_percentage'] is int) {
         return (book['progress_percentage'] as int).toDouble();
-      if (book['progress_percentage'] is num)
+      }
+      if (book['progress_percentage'] is num) {
         return (book['progress_percentage'] as num).toDouble();
+      }
     }
     return 0.0;
   }
@@ -126,7 +129,7 @@ class BookSearchDelegate extends SearchDelegate<Map<String, dynamic>?> {
             Icon(
               Icons.search_off,
               size: 64,
-              color: primaryColor.withOpacity(0.5),
+              color: primaryColor.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
@@ -151,7 +154,11 @@ class BookSearchDelegate extends SearchDelegate<Map<String, dynamic>?> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.search, size: 64, color: primaryColor.withOpacity(0.5)),
+            Icon(
+              Icons.search,
+              size: 64,
+              color: primaryColor.withValues(alpha: 0.5),
+            ),
             const SizedBox(height: 16),
             Text(
               'Search for books',

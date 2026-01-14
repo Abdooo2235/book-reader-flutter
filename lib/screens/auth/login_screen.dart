@@ -5,6 +5,7 @@ import 'package:book_reader_app/screens/auth/signup_screen.dart';
 import 'package:book_reader_app/screens/main/tabs_screen.dart';
 import 'package:book_reader_app/widgets/app_logo.dart';
 import 'package:book_reader_app/widgets/text_field_widget.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,8 +18,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController email = TextEditingController();
-  TextEditingController password = TextEditingController();
+  TextEditingController email = TextEditingController(text: kDebugMode ? 'test@gmail.com' : '');
+  TextEditingController password = TextEditingController(text: kDebugMode ? 'password' : '');
   bool obsecurePassword = true;
 
   String? validator(String? value) {
