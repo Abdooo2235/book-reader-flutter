@@ -63,15 +63,15 @@ class AuthProvider extends BaseProvider {
       );
 
       if (response['success'] == true) {
-        final token = response['data']['token'];
+        final newToken = response['data']['token'];
         final userData = response['data']['user'];
 
         // Store token
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', token);
+        await prefs.setString('token', newToken);
 
-        this.token = token;
-        this.user = userData;
+        token = newToken;
+        user = userData;
         status = AuthStatus.authenticated;
 
         setBusy(false);
@@ -101,15 +101,15 @@ class AuthProvider extends BaseProvider {
       final response = await _api.login(email: email, password: password);
 
       if (response['success'] == true) {
-        final token = response['data']['token'];
+        final newToken = response['data']['token'];
         final userData = response['data']['user'];
 
         // Store token
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', token);
+        await prefs.setString('token', newToken);
 
-        this.token = token;
-        this.user = userData;
+        token = newToken;
+        user = userData;
         status = AuthStatus.authenticated;
 
         setBusy(false);
@@ -142,13 +142,11 @@ class AuthProvider extends BaseProvider {
       status = AuthStatus.unauthenticated;
 
       setBusy(false);
-      
+
       // Navigate to login screen and clear navigation stack
       if (navigatorKey.currentContext != null) {
         Navigator.of(navigatorKey.currentContext!).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (context) => const LoginScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
           (route) => false,
         );
       }
@@ -164,13 +162,11 @@ class AuthProvider extends BaseProvider {
       setBusy(false);
       setFailed(true);
       setErrorMessage(e.toString());
-      
+
       // Navigate to login screen even if logout API call fails
       if (navigatorKey.currentContext != null) {
         Navigator.of(navigatorKey.currentContext!).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (context) => const LoginScreen(),
-          ),
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
           (route) => false,
         );
       }

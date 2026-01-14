@@ -8,7 +8,7 @@ class BookProvider extends BaseProvider {
   String _searchQuery = '';
   bool _isSearching = false;
   bool _isSelecting = false;
-  Set<int> _selectedBooks = {};
+  final Set<int> _selectedBooks = {};
 
   final Api _api = Api();
 

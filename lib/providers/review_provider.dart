@@ -2,7 +2,7 @@ import 'package:book_reader_app/providers/base_provider.dart';
 import 'package:book_reader_app/services/api.dart';
 
 class ReviewProvider extends BaseProvider {
-  Map<int, List<Map<String, dynamic>>> _bookReviews = {};
+  final Map<int, List<Map<String, dynamic>>> _bookReviews = {};
 
   final Api _api = Api();
 
@@ -118,4 +118,3 @@ class ReviewProvider extends BaseProvider {
     }
   }
 }
-

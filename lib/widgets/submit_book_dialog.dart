@@ -5,7 +5,6 @@ import 'package:book_reader_app/providers/book_provider.dart';
 import 'package:book_reader_app/providers/category_provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
@@ -246,7 +245,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: greenColor.withOpacity(0.1),
+                  color: greenColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(Icons.check_circle, color: greenColor, size: 50),
@@ -276,10 +275,10 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.1),
+                  color: primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: primaryColor.withOpacity(0.3),
+                    color: primaryColor.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
@@ -339,7 +338,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: primaryColor.withOpacity(0.2),
+              color: primaryColor.withValues(alpha: 0.2),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -354,14 +353,14 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.05),
+                  color: primaryColor.withValues(alpha: 0.05),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20),
                   ),
                   border: Border(
                     bottom: BorderSide(
-                      color: primaryColor.withOpacity(0.2),
+                      color: primaryColor.withValues(alpha: 0.2),
                       width: 1,
                     ),
                   ),
@@ -374,7 +373,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: primaryColor.withOpacity(0.1),
+                            color: primaryColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
@@ -453,7 +452,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                       Consumer<CategoryProvider>(
                         builder: (context, categoryProvider, _) {
                           return DropdownButtonFormField<int>(
-                            value: _selectedCategoryId,
+                            initialValue: _selectedCategoryId,
                             decoration: InputDecoration(
                               labelText: 'Category *',
                               prefixIcon: Icon(
@@ -495,7 +494,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                         children: [
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              value: _selectedFileType,
+                              initialValue: _selectedFileType,
                               decoration: InputDecoration(
                                 labelText: 'File Type *',
                                 prefixIcon: Icon(
@@ -569,7 +568,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                             border: Border.all(
                               color: _bookFile != null
                                   ? greenColor
-                                  : primaryColor.withOpacity(0.2),
+                                  : primaryColor.withValues(alpha: 0.2),
                               width: 2,
                             ),
                           ),
@@ -639,7 +638,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                             border: Border.all(
                               color: _coverImage != null
                                   ? greenColor
-                                  : primaryColor.withOpacity(0.2),
+                                  : primaryColor.withValues(alpha: 0.2),
                               width: 2,
                             ),
                           ),
@@ -735,7 +734,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                   ),
                   border: Border(
                     top: BorderSide(
-                      color: primaryColor.withOpacity(0.2),
+                      color: primaryColor.withValues(alpha: 0.2),
                       width: 1,
                     ),
                   ),

@@ -182,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Icon(
               Icons.search_off,
               size: 64,
-              color: primaryColor.withOpacity(0.5),
+              color: primaryColor.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
