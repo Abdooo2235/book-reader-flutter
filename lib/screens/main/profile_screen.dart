@@ -1,5 +1,8 @@
 import 'package:book_reader_app/helpers/consts.dart';
+import 'package:book_reader_app/providers/auth_provider.dart';
+import 'package:book_reader_app/providers/preferences_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -9,13 +12,33 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool isDarkMode = false; // Placeholder - will be from theme provider
-  String userName = "John Doe"; // Placeholder - will be from user model
-  String userEmail = "john.doe@example.com"; // Placeholder - will be from user model
+  @override
+  void initState() {
+    super.initState();
+    // Load user profile and preferences on init
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final preferencesProvider = Provider.of<PreferencesProvider>(context, listen: false);
+      
+      if (authProvider.user == null && authProvider.status == AuthStatus.authenticated) {
+        authProvider.loadCurrentUser();
+      }
+      
+      if (authProvider.status == AuthStatus.authenticated) {
+        preferencesProvider.loadPreferences();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Consumer2<AuthProvider, PreferencesProvider>(
+      builder: (context, authProvider, preferencesProvider, _) {
+        final userName = authProvider.user?['name']?.toString() ?? 'User';
+        final userEmail = authProvider.user?['email']?.toString() ?? 'user@example.com';
+        final isDarkMode = preferencesProvider.theme == 'dark';
+        
+        return Scaffold(
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -75,7 +98,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               color: Colors.white,
                             ),
                             onPressed: () {
-                              // TODO: Change profile picture
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Profile picture upload coming soon',
+                                    style: bodyMedium.copyWith(color: Colors.white),
+                                  ),
+                                  backgroundColor: primaryColor,
+                                ),
+                              );
                             },
                           ),
                         ),
@@ -125,7 +156,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     title: 'Change Password',
                     subtitle: 'Update your password',
                     onTap: () {
-                      // TODO: Navigate to change password screen
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Change password feature coming soon',
+                            style: bodyMedium.copyWith(color: Colors.white),
+                          ),
+                          backgroundColor: primaryColor,
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: 12),
@@ -173,11 +212,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       trailing: Switch(
                         value: isDarkMode,
-                        onChanged: (value) {
-                          setState(() {
-                            isDarkMode = value;
-                          });
-                          // TODO: Update theme mode
+                        onChanged: (value) async {
+                          final preferencesProvider = Provider.of<PreferencesProvider>(
+                            context,
+                            listen: false,
+                          );
+                          
+                          try {
+                            await preferencesProvider.updatePreferences(
+                              theme: value ? 'dark' : 'light',
+                            );
+                            
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(
+                                    children: [
+                                      const Icon(Icons.check_circle, color: Colors.white),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          'Theme updated successfully',
+                                          style: bodyMedium.copyWith(color: Colors.white),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  backgroundColor: greenColor,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  margin: const EdgeInsets.all(16),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Row(
+                                    children: [
+                                      const Icon(Icons.error_outline, color: Colors.white),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          preferencesProvider.errorMessage ?? 'Failed to update theme',
+                                          style: bodyMedium.copyWith(color: Colors.white),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  backgroundColor: redColor,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  margin: const EdgeInsets.all(16),
+                                ),
+                              );
+                            }
+                          }
                         },
                         activeColor: primaryColor,
                       ),
@@ -189,15 +284,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 24),
 
-            // Logout Button (optional placeholder)
+            // Logout Button
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
-                  onPressed: () {
-                    // TODO: Handle logout
-                  },
+                  onPressed: () => _handleLogout(context),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: BorderSide(color: redColor),
@@ -219,6 +312,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+    );
+      },
     );
   }
 
@@ -281,8 +376,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showChangeNameDialog() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final currentName = authProvider.user?['name']?.toString() ?? '';
     final TextEditingController nameController =
-        TextEditingController(text: userName);
+        TextEditingController(text: currentName);
 
     showDialog(
       context: context,
@@ -316,12 +413,90 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           TextButton(
-            onPressed: () {
-              setState(() {
-                userName = nameController.text;
-              });
+            onPressed: () async {
+              final newName = nameController.text.trim();
+              if (newName.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Name cannot be empty',
+                      style: bodyMedium.copyWith(color: Colors.white),
+                    ),
+                    backgroundColor: redColor,
+                  ),
+                );
+                return;
+              }
+
               Navigator.pop(context);
-              // TODO: Update name via API
+              
+              // Show loading
+              if (context.mounted) {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+
+              try {
+                await authProvider.updateProfile(name: newName);
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loading
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          const Icon(Icons.check_circle, color: Colors.white),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Name updated successfully',
+                              style: bodyMedium.copyWith(color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      ),
+                      backgroundColor: greenColor,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      margin: const EdgeInsets.all(16),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  if (Navigator.of(context).canPop()) {
+                    Navigator.pop(context); // Close loading
+                  }
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Row(
+                        children: [
+                          const Icon(Icons.error_outline, color: Colors.white),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              authProvider.errorMessage ?? 'Failed to update name',
+                              style: bodyMedium.copyWith(color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      ),
+                      backgroundColor: redColor,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      margin: const EdgeInsets.all(16),
+                    ),
+                  );
+                }
+              }
             },
             child: Text(
               'Save',
@@ -329,6 +504,77 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 color: primaryColor,
                 fontWeight: FontWeight.bold,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Text(
+          'Logout',
+          style: labelMedium.copyWith(color: blackColor),
+        ),
+        content: Text(
+          'Are you sure you want to logout?',
+          style: bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: bodyMedium.copyWith(color: Colors.grey[600]),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context); // Close dialog
+              
+              final authProvider = Provider.of<AuthProvider>(
+                context,
+                listen: false,
+              );
+              
+              // Show loading indicator
+              if (context.mounted) {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+              
+              try {
+                await authProvider.logout();
+                
+                // Close loading dialog - navigation is handled by auth_provider
+                if (context.mounted && Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
+              } catch (e) {
+                // Close loading dialog if still open - navigation is handled by auth_provider
+                if (context.mounted && Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: redColor,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(
+              'Logout',
+              style: bodyMedium.copyWith(color: Colors.white),
             ),
           ),
         ],

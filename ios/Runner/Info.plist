@@ -45,5 +45,15 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your photo library to select book cover images.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>This app needs permission to save images to your photo library.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to take photos for book covers.</string>
+	<key>UISupportsDocumentBrowser</key>
+	<true/>
+	<key>UISupportsOpeningDocumentsInPlace</key>
+	<true/>
 </dict>
 </plist>

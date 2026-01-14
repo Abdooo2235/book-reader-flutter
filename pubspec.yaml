@@ -42,6 +42,11 @@ dependencies:
   google_fonts:
   flutter_animate: ^4.5.2
   flutter_svg:
+  dio: ^5.4.0
+  http_parser: ^4.0.2
+  path_provider: ^2.1.1
+  file_picker: ^8.0.0
+  image_picker: ^1.0.7
 
 
 dev_dependencies:

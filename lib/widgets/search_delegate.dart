@@ -59,6 +59,61 @@ class BookSearchDelegate extends SearchDelegate<Map<String, dynamic>?> {
     }).toList();
   }
 
+  // Helper method to safely extract progress
+  double _getProgress(Map<String, dynamic> book) {
+    if (book['progress'] != null) {
+      if (book['progress'] is double) return book['progress'];
+      if (book['progress'] is int) return (book['progress'] as int).toDouble();
+      if (book['progress'] is num) return (book['progress'] as num).toDouble();
+    }
+    if (book['progress_percentage'] != null) {
+      if (book['progress_percentage'] is double)
+        return book['progress_percentage'];
+      if (book['progress_percentage'] is int)
+        return (book['progress_percentage'] as int).toDouble();
+      if (book['progress_percentage'] is num)
+        return (book['progress_percentage'] as num).toDouble();
+    }
+    return 0.0;
+  }
+
+  // Helper method to safely extract cover color
+  Color _getCoverColor(Map<String, dynamic> book) {
+    if (book['color'] != null && book['color'] is Color) {
+      return book['color'];
+    }
+    if (book['cover_color'] != null && book['cover_color'] is Color) {
+      return book['cover_color'];
+    }
+    // Generate color from title
+    final title = book['title']?.toString() ?? '';
+    return _getColorFromString(title);
+  }
+
+  // Generate a color from a string (for consistent colors per book)
+  Color _getColorFromString(String str) {
+    if (str.isEmpty) return primaryColor;
+
+    int hash = 0;
+    for (int i = 0; i < str.length; i++) {
+      hash = str.codeUnitAt(i) + ((hash << 5) - hash);
+    }
+
+    final colors = [
+      const Color(0xff7A4A2E),
+      const Color(0xffB5533C),
+      const Color(0xff6B8E4E),
+      const Color(0xff4A7C8E),
+      const Color(0xff8B6F47),
+      const Color(0xff9B7A5A),
+      const Color(0xff5A7A4A),
+      const Color(0xffC4A484),
+      const Color(0xff6B5A7A),
+    ];
+
+    return colors[hash.abs() % colors.length];
+  }
+
   Widget _buildResultsList(
     BuildContext context,
     List<Map<String, dynamic>> results,
@@ -134,9 +189,9 @@ class BookSearchDelegate extends SearchDelegate<Map<String, dynamic>?> {
             close(context, book);
           },
           child: BookCard(
-            title: book['title'] ?? '',
-            progress: (book['progress'] ?? 0.0).toDouble(),
-            coverColor: book['color'] ?? primaryColor,
+            title: book['title']?.toString() ?? 'Untitled',
+            progress: _getProgress(book),
+            coverColor: _getCoverColor(book),
           ),
         );
       },
