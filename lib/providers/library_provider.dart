@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 class LibraryProvider extends BaseProvider {
   List<Map<String, dynamic>> _libraryBooks = [];
   List<Map<String, dynamic>> _collections = [];
-  Map<int, List<Map<String, dynamic>>> _collectionBooks = {};
+  final Map<int, List<Map<String, dynamic>>> _collectionBooks = {};
 
   final Api _api = Api();
 
@@ -69,18 +69,22 @@ class LibraryProvider extends BaseProvider {
       if (response['success'] == true) {
         final data = response['data'];
         if (data is List) {
-          _collectionBooks[collectionId] =
-              List<Map<String, dynamic>>.from(data);
+          _collectionBooks[collectionId] = List<Map<String, dynamic>>.from(
+            data,
+          );
         } else if (data is Map && data['data'] != null) {
-          _collectionBooks[collectionId] =
-              List<Map<String, dynamic>>.from(data['data']);
+          _collectionBooks[collectionId] = List<Map<String, dynamic>>.from(
+            data['data'],
+          );
         } else {
           _collectionBooks[collectionId] = [];
         }
         setBusy(false);
       } else {
         setFailed(true);
-        setErrorMessage(response['message'] ?? 'Failed to load collection books');
+        setErrorMessage(
+          response['message'] ?? 'Failed to load collection books',
+        );
         setBusy(false);
       }
     } catch (e) {
@@ -138,12 +142,12 @@ class LibraryProvider extends BaseProvider {
     setBusy(true);
     setFailed(false);
     setErrorMessage(null);
-    
+
     try {
       final response = await _api.downloadBook(bookId);
-      
+
       debugPrint('Download API response: $response');
-      
+
       // Handle both nested and flat response structures
       Map<String, dynamic>? data;
       if (response['success'] == true && response['data'] != null) {
@@ -158,14 +162,15 @@ class LibraryProvider extends BaseProvider {
         // Try to get data directly
         data = response;
       }
-      
+
       debugPrint('Extracted data: $data');
-      
+
       // Check if file URL exists
-      final fileUrl = data?['file_url']?.toString() ??
+      final fileUrl =
+          data?['file_url']?.toString() ??
           data?['download_url']?.toString() ??
           data?['book_file']?.toString();
-      
+
       if (data != null && fileUrl != null && fileUrl.isNotEmpty) {
         // Reload library to include the new book
         try {
@@ -178,7 +183,8 @@ class LibraryProvider extends BaseProvider {
         return data;
       } else {
         // No file URL found
-        final errorMsg = response['message']?.toString() ?? 
+        final errorMsg =
+            response['message']?.toString() ??
             'File URL not found in server response. Response: ${response.toString()}';
         setFailed(true);
         setErrorMessage(errorMsg);
@@ -188,7 +194,7 @@ class LibraryProvider extends BaseProvider {
       }
     } catch (e) {
       debugPrint('Download exception: $e');
-      
+
       // Extract meaningful error message
       String errorMsg = 'Failed to download book';
       if (e.toString().contains('DioException')) {
@@ -197,18 +203,20 @@ class LibraryProvider extends BaseProvider {
         if (dioError.contains('401')) {
           errorMsg = 'Authentication failed. Please log in again.';
         } else if (dioError.contains('403')) {
-          errorMsg = 'You don\'t have permission to download this book. Please purchase it first.';
+          errorMsg =
+              'You don\'t have permission to download this book. Please purchase it first.';
         } else if (dioError.contains('404')) {
           errorMsg = 'Book not found. It may have been removed.';
         } else if (dioError.contains('timeout')) {
-          errorMsg = 'Request timed out. Please check your internet connection.';
+          errorMsg =
+              'Request timed out. Please check your internet connection.';
         } else {
           errorMsg = 'Network error: ${e.toString()}';
         }
       } else {
         errorMsg = e.toString().replaceAll('Exception: ', '');
       }
-      
+
       setFailed(true);
       setErrorMessage(errorMsg);
       setBusy(false);
@@ -220,16 +228,18 @@ class LibraryProvider extends BaseProvider {
   List<Map<String, dynamic>> getBooksByCollectionType(String type) {
     // Find collection by type/name
     final collection = _collections.firstWhere(
-      (c) => c['type']?.toString().toLowerCase() == type.toLowerCase() ||
-          c['name']?.toString().toLowerCase().contains(type.toLowerCase()) == true,
+      (c) =>
+          c['type']?.toString().toLowerCase() == type.toLowerCase() ||
+          c['name']?.toString().toLowerCase().contains(type.toLowerCase()) ==
+              true,
       orElse: () => <String, dynamic>{},
     );
-    
+
     if (collection.isEmpty) return [];
-    
+
     final collectionId = collection['id'];
     if (collectionId == null) return [];
-    
+
     return getCollectionBooks(collectionId);
   }
 
@@ -240,10 +250,10 @@ class LibraryProvider extends BaseProvider {
     return _libraryBooks.where((book) {
       final bookId = book['id'];
       if (bookId == null) return false;
-      
+
       final progress = progressMap[bookId];
       if (progress == null) return false;
-      
+
       final percentage = progress['progress_percentage']?.toDouble() ?? 0.0;
       return percentage > 0 && percentage < 100;
     }).toList();
@@ -256,10 +266,10 @@ class LibraryProvider extends BaseProvider {
     return _libraryBooks.where((book) {
       final bookId = book['id'];
       if (bookId == null) return false;
-      
+
       final progress = progressMap[bookId];
       if (progress == null) return false;
-      
+
       final percentage = progress['progress_percentage']?.toDouble() ?? 0.0;
       return percentage >= 100;
     }).toList();
@@ -274,7 +284,8 @@ class LibraryProvider extends BaseProvider {
   Future<void> markAsReading(int bookId) async {
     // Find "Reading" collection
     final readingCollection = _collections.firstWhere(
-      (c) => c['name']?.toString().toLowerCase().contains('reading') == true ||
+      (c) =>
+          c['name']?.toString().toLowerCase().contains('reading') == true ||
           c['type']?.toString().toLowerCase() == 'reading',
       orElse: () => <String, dynamic>{},
     );
@@ -291,7 +302,8 @@ class LibraryProvider extends BaseProvider {
   Future<void> markAsCompleted(int bookId) async {
     // Find "Already Read" or "Completed" collection
     final completedCollection = _collections.firstWhere(
-      (c) => c['name']?.toString().toLowerCase().contains('read') == true ||
+      (c) =>
+          c['name']?.toString().toLowerCase().contains('read') == true ||
           c['name']?.toString().toLowerCase().contains('completed') == true ||
           c['type']?.toString().toLowerCase() == 'completed',
       orElse: () => <String, dynamic>{},
@@ -311,4 +323,3 @@ class LibraryProvider extends BaseProvider {
     return books.any((book) => book['id'] == bookId);
   }
 }
-

@@ -2,7 +2,7 @@ import 'package:book_reader_app/providers/base_provider.dart';
 import 'package:book_reader_app/services/api.dart';
 
 class ProgressProvider extends BaseProvider {
-  Map<int, Map<String, dynamic>> _bookProgress = {};
+  final Map<int, Map<String, dynamic>> _bookProgress = {};
 
   final Api _api = Api();
 

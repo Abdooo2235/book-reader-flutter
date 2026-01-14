@@ -70,7 +70,7 @@ class BookDetailsScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 10,
                       offset: const Offset(0, 5),
                     ),
@@ -80,7 +80,7 @@ class BookDetailsScreen extends StatelessWidget {
                   child: Icon(
                     Icons.book, // Placeholder icon if no image
                     size: 64,
-                    color: Colors.white.withOpacity(0.5),
+                    color: Colors.white.withValues(alpha: 0.5),
                   ),
                 ),
               ),
@@ -184,7 +184,7 @@ class BookDetailsScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xffF5EFE6), // Light beige background
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.withOpacity(0.3)),
+        border: Border.all(color: Colors.grey.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

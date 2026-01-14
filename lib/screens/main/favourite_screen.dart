@@ -44,7 +44,7 @@ class FavouriteScreen extends StatelessWidget {
                         Icon(
                           Icons.favorite_border,
                           size: 64,
-                          color: primaryColor.withOpacity(0.5),
+                          color: primaryColor.withValues(alpha: 0.5),
                         ),
                         const SizedBox(height: 16),
                         Text(
