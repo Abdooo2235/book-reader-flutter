@@ -1,11 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import '../helpers/consts.dart';
 
 class BookCardShimmer extends StatelessWidget {
   const BookCardShimmer({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Shimmer colors based on theme
+    final baseColor = isDark 
+        ? primaryColorDark.withValues(alpha: 0.3)
+        : Colors.grey[300]!;
+    final highlightColor = isDark 
+        ? primaryColorDark.withValues(alpha: 0.6)
+        : Colors.grey[100]!;
+    final containerColor = isDark 
+        ? surfaceColorDark 
+        : Colors.white;
+    final shadowColor = isDark 
+        ? Colors.black.withValues(alpha: 0.4)
+        : Colors.black.withAlpha(25);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -13,15 +30,15 @@ class BookCardShimmer extends StatelessWidget {
         AspectRatio(
           aspectRatio: 0.7,
           child: Shimmer.fromColors(
-            baseColor: Colors.grey[300]!,
-            highlightColor: Colors.grey[100]!,
+            baseColor: baseColor,
+            highlightColor: highlightColor,
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: containerColor,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withAlpha(25),
+                    color: shadowColor,
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -33,8 +50,8 @@ class BookCardShimmer extends StatelessWidget {
         const SizedBox(height: 10),
         // Title Shimmer
         Shimmer.fromColors(
-          baseColor: Colors.grey[300]!,
-          highlightColor: Colors.grey[100]!,
+          baseColor: baseColor,
+          highlightColor: highlightColor,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -42,7 +59,7 @@ class BookCardShimmer extends StatelessWidget {
                 height: 14,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: containerColor,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
@@ -51,7 +68,7 @@ class BookCardShimmer extends StatelessWidget {
                 height: 14,
                 width: 120,
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: containerColor,
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),

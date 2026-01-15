@@ -26,6 +26,10 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
   int _currentPage = 1;
   int _totalPages = 0;
   bool _isControlsVisible = true;
+<<<<<<< HEAD
+=======
+  bool _isMarkingAsRead = false;
+>>>>>>> origin/zakaria
 
   // Download progress
   final ValueNotifier<double> _downloadProgress = ValueNotifier(0.0);
@@ -60,6 +64,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
       await progressProvider.loadBookProgress(bookId);
       final lastPage = progressProvider.getLastPage(bookId) ?? 1;
 
+<<<<<<< HEAD
       // Always mark book as reading when opening
       try {
         await libraryProvider.markAsReading(bookId);
@@ -129,6 +134,58 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
         setState(() {
           _error =
               'This book does not have a PDF file available yet. Please check back later.';
+=======
+      // Mark book as reading if not already marked
+      if (lastPage <= 1) {
+        try {
+          await libraryProvider.markAsReading(bookId);
+        } catch (e) {
+          debugPrint('Failed to mark as reading: $e');
+        }
+      }
+
+      // Get download URL - first try from the book object itself
+      String? downloadUrl =
+          widget.book['book_file_url']?.toString() ??
+          widget.book['file_url']?.toString() ??
+          widget.book['download_url']?.toString();
+
+      String? fileType = widget.book['file_type']?.toString() ?? 'pdf';
+
+      // If not in book object, try to get from API
+      if (downloadUrl == null || downloadUrl.isEmpty) {
+        try {
+          final downloadResponse = await libraryProvider.downloadBook(bookId);
+
+          if (downloadResponse != null) {
+            downloadUrl =
+                downloadResponse['file_url']?.toString() ??
+                downloadResponse['data']?['file_url']?.toString() ??
+                downloadResponse['download_url']?.toString() ??
+                downloadResponse['book_file_url']?.toString() ??
+                downloadResponse['data']?['book_file_url']?.toString();
+
+            fileType =
+                downloadResponse['file_type']?.toString() ??
+                downloadResponse['data']?['file_type']?.toString() ??
+                fileType;
+          }
+        } catch (e) {
+          debugPrint('Download API error: $e');
+        }
+      }
+
+      // Final fallback - sample PDF for testing
+      if (downloadUrl == null || downloadUrl.isEmpty) {
+        downloadUrl =
+            'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+        debugPrint('Using fallback sample PDF');
+      }
+
+      if (downloadUrl.isEmpty) {
+        setState(() {
+          _error = 'Book file not available. Please try again later.';
+>>>>>>> origin/zakaria
           _isLoading = false;
         });
         return;
@@ -188,6 +245,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
     final filePath = '${appDir.path}/book_$bookId.$extension';
     final file = File(filePath);
 
+<<<<<<< HEAD
     // Return cached file if exists and is valid (larger than 10KB - dummy PDFs are tiny)
     if (file.existsSync()) {
       final fileSize = file.lengthSync();
@@ -204,6 +262,11 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
         );
         file.deleteSync();
       }
+=======
+    // Return cached file if exists
+    if (file.existsSync()) {
+      return filePath;
+>>>>>>> origin/zakaria
     }
 
     // Show download progress dialog
@@ -255,6 +318,16 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
       _totalPages = _pdfController?.pageCount ?? 0;
     });
     _saveProgress();
+<<<<<<< HEAD
+=======
+    
+    // Show controls when reaching last page to display Done button
+    if (_currentPage >= _totalPages && _totalPages > 0) {
+      setState(() {
+        _isControlsVisible = true;
+      });
+    }
+>>>>>>> origin/zakaria
   }
 
   void _onDocumentLoaded(PdfDocumentLoadedDetails details) {
@@ -298,6 +371,82 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
     }
   }
 
+<<<<<<< HEAD
+=======
+  Future<void> _markAsReadAndClose() async {
+    if (_isMarkingAsRead) return;
+
+    setState(() {
+      _isMarkingAsRead = true;
+    });
+
+    try {
+      final progressProvider = Provider.of<ProgressProvider>(
+        context,
+        listen: false,
+      );
+      final libraryProvider = Provider.of<LibraryProvider>(
+        context,
+        listen: false,
+      );
+      final bookId = widget.book['id'];
+      final totalPages = widget.book['number_of_pages'] ?? _totalPages;
+
+      // Update progress to 100%
+      await progressProvider.updateProgress(
+        bookId: bookId,
+        lastPage: totalPages > 0 ? totalPages : _totalPages,
+        totalPages: totalPages > 0 ? totalPages : _totalPages,
+      );
+
+      // Mark as completed
+      await libraryProvider.markAsCompleted(bookId);
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Book marked as read!',
+                    style: bodyMedium.copyWith(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: greenColor,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+
+      // Navigate back
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isMarkingAsRead = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to mark as read: ${e.toString()}',
+              style: bodyMedium.copyWith(color: Colors.white),
+            ),
+            backgroundColor: redColor,
+          ),
+        );
+      }
+    }
+  }
+
+>>>>>>> origin/zakaria
   void _toggleControls() {
     setState(() {
       _isControlsVisible = !_isControlsVisible;
@@ -414,6 +563,50 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+<<<<<<< HEAD
+=======
+                      // Done button - Show when on last page
+                      if (_totalPages > 0 && _currentPage >= _totalPages)
+                        Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.only(bottom: 16),
+                          child: ElevatedButton.icon(
+                            onPressed: _isMarkingAsRead ? null : _markAsReadAndClose,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: greenColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 16,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            icon: _isMarkingAsRead
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : const Icon(Icons.check_circle, size: 24),
+                            label: Text(
+                              _isMarkingAsRead
+                                  ? 'Marking as read...'
+                                  : 'Done - Mark as Read',
+                              style: labelMedium.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+>>>>>>> origin/zakaria
                       // Page indicator
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,

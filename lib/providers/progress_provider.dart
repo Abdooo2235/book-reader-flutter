@@ -11,21 +11,12 @@ class ProgressProvider extends BaseProvider {
   Map<String, dynamic>? getBookProgress(int bookId) => _bookProgress[bookId];
   double? getProgressPercentage(int bookId) {
     final progress = _bookProgress[bookId];
-    final value = progress?['progress_percentage'];
-    if (value == null) return null;
-    if (value is num) return value.toDouble();
-    if (value is String) return double.tryParse(value);
-    return null;
+    return progress?['progress_percentage']?.toDouble();
   }
 
   int? getLastPage(int bookId) {
     final progress = _bookProgress[bookId];
-    final value = progress?['last_page'];
-    if (value == null) return null;
-    if (value is int) return value;
-    if (value is num) return value.toInt();
-    if (value is String) return int.tryParse(value);
-    return null;
+    return progress?['last_page']?.toInt();
   }
 
   // Load all progress

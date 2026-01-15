@@ -221,17 +221,75 @@ class BookProvider extends BaseProvider {
     notifyListeners();
   }
 
-  // Favorites
-  bool isFavorite(Map<String, dynamic> book) {
-    return _favorites.any((b) => b['id'] == book['id']);
+  // Load favorites from API
+  Future<void> loadFavorites() async {
+    setBusy(true);
+    try {
+      final response = await _api.getFavorites();
+      if (response['success'] == true) {
+        final data = response['data'];
+        if (data is List) {
+          _favorites.clear();
+          _favorites.addAll(
+            data.map((item) => Map<String, dynamic>.from(item)).toList(),
+          );
+        } else if (data is Map && data['data'] != null) {
+          _favorites.clear();
+          _favorites.addAll(
+            (data['data'] as List)
+                .map((item) => Map<String, dynamic>.from(item))
+                .toList(),
+          );
+        }
+        setBusy(false);
+        notifyListeners();
+      } else {
+        setFailed(true);
+        setErrorMessage(response['message'] ?? 'Failed to load favorites');
+        setBusy(false);
+      }
+    } catch (e) {
+      setFailed(true);
+      setErrorMessage(e.toString());
+      setBusy(false);
+    }
   }
 
-  void toggleFavorite(Map<String, dynamic> book) {
-    if (isFavorite(book)) {
-      _favorites.removeWhere((b) => b['id'] == book['id']);
-    } else {
-      _favorites.add(book);
+  // Favorites
+  bool isFavorite(Map<String, dynamic> book) {
+    final bookId = book['id'];
+    if (bookId == null) return false;
+    return _favorites.any((b) => b['id'] == bookId);
+  }
+
+  Future<void> toggleFavorite(Map<String, dynamic> book) async {
+    final bookId = book['id'];
+    if (bookId == null) return;
+
+    final isFav = isFavorite(book);
+
+    try {
+      if (isFav) {
+        // Remove from favorites
+        await _api.removeFromFavorites(bookId);
+        _favorites.removeWhere((b) => b['id'] == bookId);
+      } else {
+        // Add to favorites
+        await _api.addToFavorites(bookId);
+        _favorites.add(book);
+      }
+      notifyListeners();
+    } catch (e) {
+      setFailed(true);
+      setErrorMessage(e.toString());
+      // Revert the change if API call failed
+      if (isFav) {
+        _favorites.add(book);
+      } else {
+        _favorites.removeWhere((b) => b['id'] == bookId);
+      }
+      notifyListeners();
+      rethrow;
     }
-    notifyListeners();
   }
 }

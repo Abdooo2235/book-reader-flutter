@@ -28,8 +28,29 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
   int? _selectedCategoryId;
   String _selectedFileType = 'pdf';
   bool _isSubmitting = false;
+  String? _submittedBookTitle; // Store title for success dialog
 
   final ImagePicker _imagePicker = ImagePicker();
+
+  // Max file sizes in bytes
+  static const int maxBookFileSize = 50 * 1024 * 1024; // 50MB
+  static const int maxCoverImageSize = 2 * 1024 * 1024; // 2MB
+
+  @override
+  void initState() {
+    super.initState();
+    // Ensure categories are loaded when dialog opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final categoryProvider = Provider.of<CategoryProvider>(
+        context,
+        listen: false,
+      );
+      if (categoryProvider.categories.length <= 1) {
+        // Only "All" category exists, load categories
+        categoryProvider.loadCategories();
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -78,12 +99,36 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
 
           // Verify file exists
           if (await file.exists()) {
+            // Check file size
+            final fileSize = await file.length();
+            if (fileSize > maxBookFileSize) {
+              if (mounted) {
+                UiUtils.showErrorSnackBar(
+                  context,
+                  'File size exceeds 50MB limit. Please select a smaller file.',
+                );
+              }
+              return;
+            }
+
+            // Auto-detect file type from extension
+            final extension =
+                pickedFile.extension?.toLowerCase() ??
+                pickedFile.path!.split('.').last.toLowerCase();
+
+            // Validate file extension
+            if (!allowedBookExtensions.contains(extension)) {
+              if (mounted) {
+                UiUtils.showErrorSnackBar(
+                  context,
+                  'Invalid file type. Please select a PDF or EPUB file.',
+                );
+              }
+              return;
+            }
+
             setState(() {
               _bookFile = file;
-              // Auto-detect file type from extension
-              final extension =
-                  pickedFile.extension?.toLowerCase() ??
-                  pickedFile.path!.split('.').last.toLowerCase();
               if (extension == 'epub') {
                 _selectedFileType = 'epub';
               } else {
@@ -108,6 +153,29 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
               '${tempDir.path}/book_${DateTime.now().millisecondsSinceEpoch}.$extension',
             );
             await tempFile.writeAsBytes(pickedFile.bytes!);
+
+            // Check file size
+            final fileSize = pickedFile.bytes!.length;
+            if (fileSize > maxBookFileSize) {
+              if (mounted) {
+                UiUtils.showErrorSnackBar(
+                  context,
+                  'File size exceeds 50MB limit. Please select a smaller file.',
+                );
+              }
+              return;
+            }
+
+            // Validate file extension
+            if (!allowedBookExtensions.contains(extension)) {
+              if (mounted) {
+                UiUtils.showErrorSnackBar(
+                  context,
+                  'Invalid file type. Please select a PDF or EPUB file.',
+                );
+              }
+              return;
+            }
 
             setState(() {
               _bookFile = tempFile;
@@ -154,8 +222,22 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
       );
 
       if (pickedFile != null) {
+        final file = File(pickedFile.path);
+
+        // Check file size
+        final fileSize = await file.length();
+        if (fileSize > maxCoverImageSize) {
+          if (mounted) {
+            UiUtils.showErrorSnackBar(
+              context,
+              'Image size exceeds 2MB limit. Please select a smaller image.',
+            );
+          }
+          return;
+        }
+
         setState(() {
-          _coverImage = File(pickedFile.path);
+          _coverImage = file;
         });
       }
     } catch (e) {
@@ -183,6 +265,17 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
       return;
     }
 
+    // Validate file type matches selected type
+    final fileExtension = _bookFile!.path.split('.').last.toLowerCase();
+    if ((_selectedFileType == 'pdf' && fileExtension != 'pdf') ||
+        (_selectedFileType == 'epub' && fileExtension != 'epub')) {
+      UiUtils.showErrorSnackBar(
+        context,
+        'Selected file type does not match the file extension. Please select the correct file type.',
+      );
+      return;
+    }
+
     setState(() {
       _isSubmitting = true;
     });
@@ -190,8 +283,11 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
     try {
       final bookProvider = Provider.of<BookProvider>(context, listen: false);
 
+      // Store title before submission for success dialog
+      final bookTitle = _titleController.text.trim();
+
       final result = await bookProvider.submitBook(
-        title: _titleController.text.trim(),
+        title: bookTitle,
         author: _authorController.text.trim(),
         description: _descriptionController.text.trim(),
         categoryId: _selectedCategoryId!,
@@ -202,21 +298,26 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
       );
 
       if (mounted) {
-        setState(() {
-          _isSubmitting = false;
-        });
-
         if (result != null) {
+          // Store title for success dialog
+          _submittedBookTitle = bookTitle;
+
+          // Reset form
+          _resetForm();
+
           // Close dialog
           Navigator.pop(context);
 
           // Show success dialog with admin approval message
           _showSuccessDialog();
         } else {
-          UiUtils.showErrorSnackBar(
-            context,
-            bookProvider.errorMessage ?? 'Failed to submit book',
-          );
+          setState(() {
+            _isSubmitting = false;
+          });
+
+          final errorMessage =
+              bookProvider.errorMessage ?? 'Failed to submit book';
+          UiUtils.showErrorSnackBar(context, errorMessage);
         }
       }
     } catch (e) {
@@ -224,9 +325,39 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
         setState(() {
           _isSubmitting = false;
         });
-        UiUtils.showErrorSnackBar(context, 'Error: ${e.toString()}');
+
+        String errorMessage = 'An error occurred while submitting the book.';
+        if (e.toString().contains('timeout')) {
+          errorMessage =
+              'Request timed out. Please check your internet connection and try again.';
+        } else if (e.toString().contains('network')) {
+          errorMessage =
+              'Network error. Please check your internet connection.';
+        } else if (e.toString().contains('401') ||
+            e.toString().contains('unauthorized')) {
+          errorMessage =
+              'You are not authorized to submit books. Please log in again.';
+        } else if (e.toString().contains('422') ||
+            e.toString().contains('validation')) {
+          errorMessage =
+              'Validation error. Please check all fields and try again.';
+        }
+
+        UiUtils.showErrorSnackBar(context, errorMessage);
       }
     }
+  }
+
+  void _resetForm() {
+    _titleController.clear();
+    _authorController.clear();
+    _descriptionController.clear();
+    _pagesController.clear();
+    _bookFile = null;
+    _coverImage = null;
+    _selectedCategoryId = null;
+    _selectedFileType = 'pdf';
+    _formKey.currentState?.reset();
   }
 
   void _showSuccessDialog() {
@@ -275,7 +406,9 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
 
               // Message
               Text(
-                'Your book "${_titleController.text}" has been submitted for review.',
+                _submittedBookTitle != null
+                    ? 'Your book "$_submittedBookTitle" has been submitted for review.'
+                    : 'Your book has been submitted for review.',
                 style: bodyMedium.copyWith(color: secondaryTextColor),
                 textAlign: TextAlign.center,
               ),
@@ -476,8 +609,63 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                       // Category Dropdown
                       Consumer<CategoryProvider>(
                         builder: (context, categoryProvider, _) {
+                          // Filter out "All" category (id is null) and get only valid categories
+                          final validCategories = categoryProvider.categories
+                              .where((cat) => cat['id'] != null)
+                              .toList();
+
+                          if (categoryProvider.busy) {
+                            return DropdownButtonFormField<int>(
+                              decoration: InputDecoration(
+                                labelText: 'Category *',
+                                prefixIcon: Icon(
+                                  Icons.category,
+                                  color: accentColor,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                filled: true,
+                                fillColor: formFieldColor,
+                                suffixIcon: const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: Padding(
+                                    padding: EdgeInsets.all(12.0),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              items: const [],
+                              onChanged: null,
+                              validator: (value) => 'Loading categories...',
+                            );
+                          }
+
+                          if (validCategories.isEmpty) {
+                            return DropdownButtonFormField<int>(
+                              decoration: InputDecoration(
+                                labelText: 'Category *',
+                                prefixIcon: Icon(
+                                  Icons.category,
+                                  color: accentColor,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                filled: true,
+                                fillColor: formFieldColor,
+                              ),
+                              items: const [],
+                              onChanged: null,
+                              validator: (value) => 'No categories available',
+                            );
+                          }
+
                           return DropdownButtonFormField<int>(
-                            initialValue: _selectedCategoryId,
+                            value: _selectedCategoryId,
                             decoration: InputDecoration(
                               labelText: 'Category *',
                               prefixIcon: Icon(
@@ -490,17 +678,12 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                               filled: true,
                               fillColor: formFieldColor,
                             ),
-                            items: categoryProvider.categories
-                                .where((cat) => cat['id'] != null)
-                                .map((category) {
-                                  return DropdownMenuItem<int>(
-                                    value: category['id'] as int,
-                                    child: Text(
-                                      category['name']?.toString() ?? '',
-                                    ),
-                                  );
-                                })
-                                .toList(),
+                            items: validCategories.map((category) {
+                              return DropdownMenuItem<int>(
+                                value: category['id'] as int,
+                                child: Text(category['name']?.toString() ?? ''),
+                              );
+                            }).toList(),
                             onChanged: (value) {
                               setState(() {
                                 _selectedCategoryId = value;

@@ -5,7 +5,6 @@ import 'package:book_reader_app/helpers/consts.dart';
 import 'package:book_reader_app/helpers/navigator_key.dart';
 import 'package:book_reader_app/screens/auth/login_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:http_parser/http_parser.dart';
 
 class Api {
   static final Api _instance = Api._internal();
@@ -22,11 +21,8 @@ class Api {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        connectTimeout: const Duration(seconds: 60),
-        receiveTimeout: const Duration(seconds: 120),
-        sendTimeout: const Duration(
-          seconds: 300,
-        ), // 5 min for large file uploads
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 30),
       ),
     );
 
@@ -187,87 +183,29 @@ class Api {
     File? bookFile,
     File? coverImage,
   }) async {
-    try {
-      // Log file info for debugging
-      if (bookFile != null) {
-        final fileSize = await bookFile.length();
-        debugPrint('Book file path: ${bookFile.path}');
-        debugPrint(
-          'Book file size: ${(fileSize / 1024 / 1024).toStringAsFixed(2)} MB',
-        );
-        debugPrint('Book file exists: ${await bookFile.exists()}');
-      }
+    final formData = FormData.fromMap({
+      'title': title,
+      'author': author,
+      'description': description,
+      'category_id': categoryId,
+      'file_type': fileType,
+      'number_of_pages': numberOfPages,
+      if (bookFile != null)
+        'book_file': await MultipartFile.fromFile(bookFile.path),
+      if (coverImage != null)
+        'cover_image': await MultipartFile.fromFile(coverImage.path),
+    });
 
-      final formData = FormData.fromMap({
-        'title': title,
-        'author': author,
-        'description': description,
-        'category_id': categoryId,
-        'file_type': fileType,
-        'number_of_pages': numberOfPages,
-        if (bookFile != null)
-          'book_file': await MultipartFile.fromFile(
-            bookFile.path,
-            filename: bookFile.path.split('/').last.split('\\').last,
-            contentType: MediaType.parse(
-              fileType == 'pdf' ? 'application/pdf' : 'application/epub+zip',
-            ),
-          ),
-        if (coverImage != null)
-          'cover_image': await MultipartFile.fromFile(
-            coverImage.path,
-            filename: coverImage.path.split('/').last.split('\\').last,
-            contentType: MediaType.parse('image/jpeg'),
-          ),
-      });
+    final response = await _dio.post('/books', data: formData);
 
-      debugPrint('Submitting book to /books endpoint...');
-      final response = await _dio.post('/books', data: formData);
-
-      // Handle different response types
-      if (response.data is Map<String, dynamic>) {
-        return response.data;
-      } else if (response.data is String) {
-        // Try to parse string as JSON, otherwise wrap it
-        return {'success': true, 'message': response.data};
-      } else {
-        return {'success': true, 'data': response.data};
-      }
-    } on DioException catch (e) {
-      debugPrint('SubmitBook Error Status: ${e.response?.statusCode}');
-      debugPrint('SubmitBook Error Data: ${e.response?.data}');
-      debugPrint('SubmitBook Error Message: ${e.message}');
-
-      // Extract error message from server response
-      String errorMessage = 'Failed to submit book';
-
-      if (e.response?.data != null) {
-        final data = e.response!.data;
-        if (data is Map<String, dynamic>) {
-          // Try to get message from response
-          errorMessage = data['message'] ?? errorMessage;
-
-          // If there are validation errors, format them
-          if (data['errors'] != null && data['errors'] is Map) {
-            final errors = data['errors'] as Map;
-            final errorList = <String>[];
-            errors.forEach((key, value) {
-              if (value is List && value.isNotEmpty) {
-                errorList.add(value.first.toString());
-              }
-            });
-            if (errorList.isNotEmpty) {
-              errorMessage = errorList.join(', ');
-            }
-          }
-        } else if (data is String) {
-          errorMessage = data;
-        }
-      } else if (e.message != null) {
-        errorMessage = e.message!;
-      }
-
-      return {'success': false, 'message': errorMessage};
+    // Handle different response types
+    if (response.data is Map<String, dynamic>) {
+      return response.data;
+    } else if (response.data is String) {
+      // Try to parse string as JSON, otherwise wrap it
+      return {'success': true, 'message': response.data};
+    } else {
+      return {'success': true, 'data': response.data};
     }
   }
 
@@ -278,26 +216,6 @@ class Api {
 
   Future<void> deletePendingBook(int id) async {
     await _dio.delete('/my-books/$id');
-  }
-
-  // ==================== CART ====================
-
-  Future<Map<String, dynamic>> getCart() async {
-    final response = await _dio.get('/cart');
-    return response.data;
-  }
-
-  Future<void> addBookToCart(int bookId) async {
-    await _dio.post('/cart/books/$bookId');
-  }
-
-  Future<void> removeBookFromCart(int bookId) async {
-    await _dio.delete('/cart/books/$bookId');
-  }
-
-  Future<Map<String, dynamic>> checkout() async {
-    final response = await _dio.post('/cart/checkout');
-    return response.data;
   }
 
   // ==================== ORDERS ====================
@@ -322,6 +240,10 @@ class Api {
   Future<Map<String, dynamic>> downloadBook(int bookId) async {
     final response = await _dio.get('/library/$bookId/download');
     return response.data;
+  }
+
+  Future<void> removeBookFromLibrary(int bookId) async {
+    await _dio.delete('/library/$bookId');
   }
 
   // ==================== FAVORITES ====================

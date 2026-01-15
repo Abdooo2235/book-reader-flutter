@@ -2,12 +2,10 @@ import 'package:book_reader_app/helpers/consts.dart';
 import 'package:book_reader_app/helpers/navigator_key.dart';
 import 'package:book_reader_app/providers/auth_provider.dart';
 import 'package:book_reader_app/providers/book_provider.dart';
-import 'package:book_reader_app/providers/cart_provider.dart';
 import 'package:book_reader_app/providers/category_provider.dart';
 import 'package:book_reader_app/providers/library_provider.dart';
 import 'package:book_reader_app/providers/preferences_provider.dart';
 import 'package:book_reader_app/providers/progress_provider.dart';
-import 'package:book_reader_app/providers/review_provider.dart';
 import 'package:book_reader_app/screens/auth/splash_screen.dart';
 import 'package:book_reader_app/services/api.dart';
 import 'package:flutter/material.dart';
@@ -60,6 +58,7 @@ class MyApp extends StatelessWidget {
 
   // Dark theme (warm palette matching light mode)
   ThemeData get darkTheme => ThemeData(
+    
     brightness: Brightness.dark,
     primaryColor: primaryColorDark,
     scaffoldBackgroundColor: scaffoldBackgroundColorDark,
@@ -92,10 +91,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => AuthProvider()),
         ChangeNotifierProvider(create: (context) => BookProvider()),
         ChangeNotifierProvider(create: (context) => CategoryProvider()),
-        ChangeNotifierProvider(create: (context) => CartProvider()),
         ChangeNotifierProvider(create: (context) => LibraryProvider()),
         ChangeNotifierProvider(create: (context) => ProgressProvider()),
-        ChangeNotifierProvider(create: (context) => ReviewProvider()),
         ChangeNotifierProvider.value(value: preferencesProvider),
       ],
       child: Consumer<PreferencesProvider>(

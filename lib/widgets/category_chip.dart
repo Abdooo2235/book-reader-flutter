@@ -20,6 +20,9 @@ class CategoryChip extends StatefulWidget {
 class _CategoryChipState extends State<CategoryChip> {
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activePrimaryColor = isDark ? primaryColorDark : primaryColor;
+
     return GestureDetector(
       onTap: widget.onTap,
       child: AnimatedContainer(
@@ -27,15 +30,16 @@ class _CategoryChipState extends State<CategoryChip> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
-          color: widget.isSelected ? primaryColor : Colors.white,
+          color: widget.isSelected ? activePrimaryColor : Colors.transparent,
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
-            color: widget.isSelected ? primaryColor : Colors.grey.shade300,
+            color: activePrimaryColor,
+            width: 1.5,
           ),
           boxShadow: [
             if (widget.isSelected)
               BoxShadow(
-                color: primaryColor.withValues(alpha: 0.3),
+                color: activePrimaryColor.withValues(alpha: 0.3),
                 blurRadius: 5,
                 offset: const Offset(0, 3),
               ),
@@ -44,7 +48,9 @@ class _CategoryChipState extends State<CategoryChip> {
         child: Text(
           widget.label,
           style: TextStyle(
-            color: widget.isSelected ? Colors.white : Colors.black87,
+            color: widget.isSelected 
+                ? Colors.white 
+                : (isDark ? whiteColorDark : blackColor),
             fontWeight: FontWeight.w500,
           ),
         ),

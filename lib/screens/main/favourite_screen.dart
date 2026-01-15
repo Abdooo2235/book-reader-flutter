@@ -6,10 +6,32 @@ import 'package:provider/provider.dart';
 
 import 'package:flutter/material.dart';
 
+<<<<<<< HEAD
 class FavouriteScreen extends StatelessWidget {
   const FavouriteScreen({super.key});
 
   @override
+=======
+class FavouriteScreen extends StatefulWidget {
+  const FavouriteScreen({super.key});
+
+  @override
+  State<FavouriteScreen> createState() => _FavouriteScreenState();
+}
+
+class _FavouriteScreenState extends State<FavouriteScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Load favorites when screen is opened
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final bookProvider = Provider.of<BookProvider>(context, listen: false);
+      bookProvider.loadFavorites();
+    });
+  }
+
+  @override
+>>>>>>> origin/zakaria
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? whiteColorDark : blackColor;
@@ -42,6 +64,7 @@ class FavouriteScreen extends StatelessWidget {
           ),
           Divider(color: accentColor, thickness: 0.25),
           Expanded(
+<<<<<<< HEAD
             child: Consumer<BookProvider>(
               builder: (context, bookProvider, child) {
                 final favorites = bookProvider.favorites;
@@ -83,6 +106,71 @@ class FavouriteScreen extends StatelessWidget {
                   },
                 );
               },
+=======
+            child: RefreshIndicator(
+              onRefresh: () async {
+                final bookProvider = Provider.of<BookProvider>(
+                  context,
+                  listen: false,
+                );
+                await bookProvider.loadFavorites();
+              },
+              color: accentColor,
+              child: Consumer<BookProvider>(
+                builder: (context, bookProvider, child) {
+                  final favorites = bookProvider.favorites;
+
+                  if (favorites.isEmpty) {
+                    return ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.6,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.favorite_border,
+                                  size: 64,
+                                  color: accentColor.withValues(alpha: 0.5),
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No favourites yet',
+                                  style: bodyLarge.copyWith(
+                                    color: secondaryTextColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Add books to your favourites',
+                                  style: bodyMedium.copyWith(
+                                    color: tertiaryTextColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+
+                  return BooksGrid(
+                    books: favorites,
+                    onBookTap: (book) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => BookDetailsScreen(book: book),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+>>>>>>> origin/zakaria
             ),
           ),
         ],
