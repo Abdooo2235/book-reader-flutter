@@ -60,12 +60,25 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
       await progressProvider.loadBookProgress(bookId);
       final lastPage = progressProvider.getLastPage(bookId) ?? 1;
 
-      // Mark book as reading if not already marked
+      // Always mark book as reading when opening
+      try {
+        await libraryProvider.markAsReading(bookId);
+        debugPrint('Marked book $bookId as reading');
+      } catch (e) {
+        debugPrint('Failed to mark as reading: $e');
+      }
+
+      // Initialize progress if this is first time reading (page 0 or null)
       if (lastPage <= 1) {
         try {
-          await libraryProvider.markAsReading(bookId);
+          await progressProvider.updateProgress(
+            bookId: bookId,
+            lastPage: 1,
+            totalPages: widget.book['number_of_pages'] ?? 100,
+          );
+          debugPrint('Initialized progress for book $bookId');
         } catch (e) {
-          debugPrint('Failed to mark as reading: $e');
+          debugPrint('Failed to initialize progress: $e');
         }
       }
 
@@ -73,43 +86,46 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
       String? downloadUrl =
           widget.book['book_file_url']?.toString() ??
           widget.book['file_url']?.toString() ??
+          widget.book['book_file']?.toString() ??
           widget.book['download_url']?.toString();
 
       String? fileType = widget.book['file_type']?.toString() ?? 'pdf';
+
+      debugPrint('Book data: ${widget.book}');
+      debugPrint('Initial downloadUrl from book object: $downloadUrl');
 
       // If not in book object, try to get from API
       if (downloadUrl == null || downloadUrl.isEmpty) {
         try {
           final downloadResponse = await libraryProvider.downloadBook(bookId);
 
+          debugPrint('Download API response: $downloadResponse');
+
           if (downloadResponse != null) {
             downloadUrl =
                 downloadResponse['file_url']?.toString() ??
+                downloadResponse['book_file_url']?.toString() ??
                 downloadResponse['data']?['file_url']?.toString() ??
                 downloadResponse['download_url']?.toString() ??
-                downloadResponse['book_file_url']?.toString() ??
                 downloadResponse['data']?['book_file_url']?.toString();
 
             fileType =
                 downloadResponse['file_type']?.toString() ??
                 downloadResponse['data']?['file_type']?.toString() ??
                 fileType;
+
+            debugPrint('Download URL from API: $downloadUrl');
           }
         } catch (e) {
           debugPrint('Download API error: $e');
         }
       }
 
-      // Final fallback - sample PDF for testing
+      // Check if we have a valid URL
       if (downloadUrl == null || downloadUrl.isEmpty) {
-        downloadUrl =
-            'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
-        debugPrint('Using fallback sample PDF');
-      }
-
-      if (downloadUrl.isEmpty) {
         setState(() {
-          _error = 'Book file not available. Please try again later.';
+          _error =
+              'This book does not have a PDF file available yet. Please check back later.';
           _isLoading = false;
         });
         return;
