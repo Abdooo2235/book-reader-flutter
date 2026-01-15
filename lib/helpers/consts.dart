@@ -6,6 +6,7 @@ String baseUrl = "https://book-reader-store-backend.onrender.com/api";
 
 // ------------------- COLORS CONSTS -------------------
 
+// Light mode colors
 const Color primaryColor = Color(0xff7A4A2E);
 const Color scaffoldBackgroundColor = Color.fromARGB(255, 250, 243, 232);
 const Color whiteColor = Color(0xffFAF7F2);
@@ -13,6 +14,19 @@ const Color blackColor = Color(0xff2B1D14);
 
 const Color redColor = Color(0xffB5533C);
 const Color greenColor = Color(0xff6B8E4E);
+
+// Dark mode colors
+const Color primaryColorDark = Color(
+  0xffC89B7B,
+);
+const Color scaffoldBackgroundColorDark = Color(
+  0xff1C1410,
+);
+const Color surfaceColorDark = Color(0xff241A15); 
+const Color whiteColorDark = Color(0xffEFE6DC);
+const Color blackColorDark = Color(0xff120C09);
+const Color redColorDark = Color(0xffC96A54);
+const Color greenColorDark = Color(0xff8FB573);
 
 // ------------------- TEXT CONSTS -------------------
 

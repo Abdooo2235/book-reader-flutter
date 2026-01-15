@@ -47,7 +47,7 @@ class BooksGrid extends StatelessWidget {
       itemBuilder: (context, index) {
         final book = books[index];
 
-        // Safely extract progress - handle different possible field names and types
+        // Safely extract progress
         double progress = 0.0;
         if (book['progress'] != null) {
           if (book['progress'] is double) {
@@ -67,7 +67,7 @@ class BooksGrid extends StatelessWidget {
           }
         }
 
-        // Safely extract color
+        // Safely extract cover color
         Color coverColor = primaryColor;
         if (book['color'] != null && book['color'] is Color) {
           coverColor = book['color'];
@@ -75,17 +75,23 @@ class BooksGrid extends StatelessWidget {
             book['cover_color'] is Color) {
           coverColor = book['cover_color'];
         } else {
-          // Generate color from title or cover_url
           final title = book['title']?.toString() ?? '';
           coverColor = _getColorFromString(title);
         }
+
+        // Extract cover URL from backend response
+        String? coverUrl = book['cover_url']?.toString();
+        coverUrl ??= book['cover_image']?.toString();
+        coverUrl ??= book['cover_thumb_url']?.toString();
 
         return GestureDetector(
           onTap: () => onBookTap?.call(book),
           child: BookCard(
             title: book['title']?.toString() ?? 'Untitled',
+            author: book['author']?.toString(),
             progress: progress,
             coverColor: coverColor,
+            coverUrl: coverUrl,
           ),
         );
       },

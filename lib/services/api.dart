@@ -275,6 +275,15 @@ class Api {
     return response.data['data'] ?? [];
   }
 
+  Future<Map<String, dynamic>> createCollection(String name) async {
+    final response = await _dio.post('/collections', data: {'name': name});
+    return response.data;
+  }
+
+  Future<void> deleteCollection(int collectionId) async {
+    await _dio.delete('/collections/$collectionId');
+  }
+
   Future<Map<String, dynamic>> getCollectionBooks(int collectionId) async {
     final response = await _dio.get('/collections/$collectionId/books');
     return response.data;

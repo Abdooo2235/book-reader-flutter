@@ -28,24 +28,28 @@ class _TabsScreenState extends State<TabsScreen> {
   ];
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isDark
+        ? scaffoldBackgroundColorDark
+        : scaffoldBackgroundColor;
+    final navBarColor = isDark ? surfaceColorDark : whiteColor;
+    final activeColor = isDark ? primaryColorDark : primaryColor;
+
     return Consumer<AuthProvider>(
       builder: (context, authConsumer, _) {
         return Scaffold(
           // drawer: CustomDrawer(),
-          appBar: AppBar(
-            backgroundColor: scaffoldBackgroundColor,
-            toolbarHeight: 0,
-          ),
+          appBar: AppBar(backgroundColor: backgroundColor, toolbarHeight: 0),
           body: IndexedStack(index: currentIndex, children: screens),
           bottomNavigationBar: Container(
             decoration: BoxDecoration(
-              color: whiteColor,
+              color: navBarColor,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(20),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withAlpha(13),
+                  color: Colors.black.withAlpha(isDark ? 40 : 13),
                   blurRadius: 10,
                   offset: const Offset(0, -5),
                 ),
@@ -56,16 +60,16 @@ class _TabsScreenState extends State<TabsScreen> {
                 top: Radius.circular(20),
               ),
               child: BottomNavigationBar(
-                backgroundColor: whiteColor,
+                backgroundColor: navBarColor,
                 elevation: 0,
-                selectedItemColor: primaryColor,
-                unselectedItemColor: primaryColor.withAlpha(102),
+                selectedItemColor: activeColor,
+                unselectedItemColor: activeColor.withAlpha(102),
                 selectedLabelStyle: labelSmall.copyWith(
-                  color: primaryColor,
+                  color: activeColor,
                   fontWeight: FontWeight.w700,
                 ),
                 unselectedLabelStyle: labelSmall.copyWith(
-                  color: primaryColor.withAlpha(102),
+                  color: activeColor.withAlpha(102),
                 ),
                 currentIndex: currentIndex,
                 onTap: (value) {
@@ -78,31 +82,31 @@ class _TabsScreenState extends State<TabsScreen> {
                     label: "Home",
                     icon: Icon(CupertinoIcons.home),
                     activeIcon: Icon(CupertinoIcons.house_fill),
-                    backgroundColor: whiteColor,
+                    backgroundColor: navBarColor,
                   ),
                   BottomNavigationBarItem(
                     label: "Library",
                     icon: Icon(CupertinoIcons.book),
                     activeIcon: Icon(CupertinoIcons.book_fill),
-                    backgroundColor: whiteColor,
+                    backgroundColor: navBarColor,
                   ),
                   BottomNavigationBarItem(
                     label: "Cart",
                     icon: Icon(CupertinoIcons.shopping_cart),
                     activeIcon: Icon(CupertinoIcons.cart_fill),
-                    backgroundColor: whiteColor,
+                    backgroundColor: navBarColor,
                   ),
                   BottomNavigationBarItem(
                     label: "Favourites",
                     icon: Icon(CupertinoIcons.heart),
                     activeIcon: Icon(CupertinoIcons.heart_fill),
-                    backgroundColor: whiteColor,
+                    backgroundColor: navBarColor,
                   ),
                   BottomNavigationBarItem(
                     label: "Profile",
                     icon: Icon(CupertinoIcons.person),
                     activeIcon: Icon(CupertinoIcons.person_fill),
-                    backgroundColor: whiteColor,
+                    backgroundColor: navBarColor,
                   ),
                 ],
               ),

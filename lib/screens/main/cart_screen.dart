@@ -113,6 +113,20 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? surfaceColorDark : Colors.white;
+    final textColor = isDark ? whiteColorDark : blackColor;
+    final secondaryTextColor = isDark
+        ? whiteColorDark.withValues(alpha: 0.6)
+        : Colors.grey[600];
+    final tertiaryTextColor = isDark
+        ? whiteColorDark.withValues(alpha: 0.5)
+        : Colors.grey[500];
+    final accentColor = isDark ? primaryColorDark : primaryColor;
+    final dividerColor = isDark
+        ? whiteColorDark.withValues(alpha: 0.1)
+        : Colors.grey[300];
+
     return Consumer<CartProvider>(
       builder: (context, cartProvider, _) {
         return Scaffold(
@@ -131,16 +145,18 @@ class _CartScreenState extends State<CartScreen> {
                       style: bodySmall.copyWith(
                         fontWeight: FontWeight.bold,
                         fontSize: 24,
-                        color: Colors.black87,
+                        color: textColor,
                       ),
                     ),
                   ],
                 ),
               ),
-              Divider(color: primaryColor, thickness: 0.25),
+              Divider(color: accentColor, thickness: 0.25),
               Expanded(
                 child: cartProvider.busy
-                    ? const Center(child: CircularProgressIndicator())
+                    ? Center(
+                        child: CircularProgressIndicator(color: accentColor),
+                      )
                     : cartProvider.cartItems.isEmpty
                     ? Center(
                         child: Column(
@@ -149,20 +165,20 @@ class _CartScreenState extends State<CartScreen> {
                             Icon(
                               Icons.shopping_cart_outlined,
                               size: 64,
-                              color: primaryColor.withValues(alpha: 0.5),
+                              color: accentColor.withValues(alpha: 0.5),
                             ),
                             const SizedBox(height: 16),
                             Text(
                               'Your cart is empty',
                               style: bodyLarge.copyWith(
-                                color: Colors.grey[600],
+                                color: secondaryTextColor,
                               ),
                             ),
                             const SizedBox(height: 8),
                             Text(
                               'Add books to your cart',
                               style: bodyMedium.copyWith(
-                                color: Colors.grey[500],
+                                color: tertiaryTextColor,
                               ),
                             ),
                           ],
@@ -203,10 +219,10 @@ class _CartScreenState extends State<CartScreen> {
               if (cartProvider.cartItems.isNotEmpty)
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: cardColor,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withAlpha(25),
+                        color: Colors.black.withAlpha(isDark ? 50 : 25),
                         blurRadius: 8,
                         offset: const Offset(0, -2),
                       ),
@@ -228,13 +244,13 @@ class _CartScreenState extends State<CartScreen> {
                                 Text(
                                   'Subtotal',
                                   style: bodyMedium.copyWith(
-                                    color: Colors.grey[700],
+                                    color: secondaryTextColor,
                                   ),
                                 ),
                                 Text(
                                   '\$${cartProvider.subtotal.toStringAsFixed(2)}',
                                   style: bodyMedium.copyWith(
-                                    color: Colors.grey[700],
+                                    color: secondaryTextColor,
                                   ),
                                 ),
                               ],
@@ -245,14 +261,12 @@ class _CartScreenState extends State<CartScreen> {
                               children: [
                                 Text(
                                   'Total',
-                                  style: labelMedium.copyWith(
-                                    color: blackColor,
-                                  ),
+                                  style: labelMedium.copyWith(color: textColor),
                                 ),
                                 Text(
                                   '\$${cartProvider.total.toStringAsFixed(2)}',
                                   style: labelMedium.copyWith(
-                                    color: primaryColor,
+                                    color: accentColor,
                                     fontSize: 20,
                                   ),
                                 ),
@@ -261,7 +275,7 @@ class _CartScreenState extends State<CartScreen> {
                           ],
                         ),
                       ),
-                      Divider(color: Colors.grey[300], height: 1),
+                      Divider(color: dividerColor, height: 1),
                       Padding(
                         padding: const EdgeInsets.all(16),
                         child: SizedBox(
@@ -272,7 +286,7 @@ class _CartScreenState extends State<CartScreen> {
                                 ? null
                                 : _handleCheckout,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryColor,
+                              backgroundColor: accentColor,
                               foregroundColor: Colors.white,
                               elevation: 0,
                               shape: RoundedRectangleBorder(
