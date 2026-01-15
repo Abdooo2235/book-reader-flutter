@@ -35,20 +35,29 @@ class _LibraryScreenState extends State<LibraryScreen>
   }
 
   Widget _buildBookList(
+    BuildContext context,
     List<Map<String, dynamic>> books,
     String emptyMessage,
     IconData emptyIcon,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryTextColor = isDark
+        ? whiteColorDark.withValues(alpha: 0.6)
+        : Colors.grey[600];
+    final iconColor = isDark
+        ? whiteColorDark.withValues(alpha: 0.3)
+        : Colors.grey[300];
+
     if (books.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(emptyIcon, size: 64, color: Colors.grey[300]),
+            Icon(emptyIcon, size: 64, color: iconColor),
             const SizedBox(height: 16),
             Text(
               emptyMessage,
-              style: bodyLarge.copyWith(color: Colors.grey[600]),
+              style: bodyLarge.copyWith(color: secondaryTextColor),
             ),
           ],
         ),
@@ -69,17 +78,30 @@ class _LibraryScreenState extends State<LibraryScreen>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isDark
+        ? scaffoldBackgroundColorDark
+        : scaffoldBackgroundColor;
+    final textColor = isDark ? whiteColorDark : blackColor;
+    final accentColor = isDark ? primaryColorDark : primaryColor;
+    final unselectedTabColor = isDark
+        ? whiteColorDark.withValues(alpha: 0.5)
+        : Colors.grey;
+
     return Scaffold(
-      backgroundColor: scaffoldBackgroundColor,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: scaffoldBackgroundColor,
+        backgroundColor: backgroundColor,
         elevation: 0,
-        title: Text('My Library', style: displaySmall.copyWith(fontSize: 24)),
+        title: Text(
+          'My Library',
+          style: displaySmall.copyWith(fontSize: 24, color: textColor),
+        ),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: primaryColor,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: primaryColor,
+          labelColor: accentColor,
+          unselectedLabelColor: unselectedTabColor,
+          indicatorColor: accentColor,
           labelPadding: const EdgeInsets.symmetric(horizontal: 2),
           tabs: [
             Tab(
@@ -138,7 +160,7 @@ class _LibraryScreenState extends State<LibraryScreen>
       body: Consumer2<LibraryProvider, ProgressProvider>(
         builder: (context, libraryProvider, progressProvider, child) {
           if (libraryProvider.busy || progressProvider.busy) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(child: CircularProgressIndicator(color: accentColor));
           }
 
           final readingBooks = libraryProvider.getReadingBooks(
@@ -154,6 +176,7 @@ class _LibraryScreenState extends State<LibraryScreen>
             children: [
               // Reading Tab
               _buildBookList(
+                context,
                 readingBooks,
                 'You are not reading any books',
                 Icons.menu_book,
@@ -161,6 +184,7 @@ class _LibraryScreenState extends State<LibraryScreen>
 
               // Already Read Tab
               _buildBookList(
+                context,
                 completedBooks,
                 'You haven\'t finished any books yet',
                 Icons.done_all,
@@ -168,6 +192,7 @@ class _LibraryScreenState extends State<LibraryScreen>
 
               // Shelves (All Books) Tab
               _buildBookList(
+                context,
                 allBooks,
                 'Your library is empty',
                 Icons.library_books,

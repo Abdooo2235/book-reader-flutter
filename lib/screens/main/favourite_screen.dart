@@ -11,6 +11,16 @@ class FavouriteScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? whiteColorDark : blackColor;
+    final secondaryTextColor = isDark
+        ? whiteColorDark.withValues(alpha: 0.6)
+        : Colors.grey[600];
+    final tertiaryTextColor = isDark
+        ? whiteColorDark.withValues(alpha: 0.5)
+        : Colors.grey[500];
+    final accentColor = isDark ? primaryColorDark : primaryColor;
+
     return Scaffold(
       body: Column(
         children: [
@@ -24,13 +34,13 @@ class FavouriteScreen extends StatelessWidget {
                   style: bodySmall.copyWith(
                     fontWeight: FontWeight.bold,
                     fontSize: 24,
-                    color: Colors.black87,
+                    color: textColor,
                   ),
                 ),
               ],
             ),
           ),
-          Divider(color: primaryColor, thickness: 0.25),
+          Divider(color: accentColor, thickness: 0.25),
           Expanded(
             child: Consumer<BookProvider>(
               builder: (context, bookProvider, child) {
@@ -44,17 +54,17 @@ class FavouriteScreen extends StatelessWidget {
                         Icon(
                           Icons.favorite_border,
                           size: 64,
-                          color: primaryColor.withValues(alpha: 0.5),
+                          color: accentColor.withValues(alpha: 0.5),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'No favourites yet',
-                          style: bodyLarge.copyWith(color: Colors.grey[600]),
+                          style: bodyLarge.copyWith(color: secondaryTextColor),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Add books to your favourites',
-                          style: bodyMedium.copyWith(color: Colors.grey[500]),
+                          style: bodyMedium.copyWith(color: tertiaryTextColor),
                         ),
                       ],
                     ),

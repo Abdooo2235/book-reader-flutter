@@ -42,12 +42,17 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? whiteColorDark : blackColor;
+    final searchFieldColor = isDark ? surfaceColorDark : Colors.white;
+    final accentColor = isDark ? primaryColorDark : primaryColor;
+
     return Consumer2<BookProvider, CategoryProvider>(
       builder: (context, bookProvider, categoryProvider, child) {
         return Scaffold(
           floatingActionButton: FloatingActionButton(
             onPressed: _showAddBookDialog,
-            backgroundColor: primaryColor,
+            backgroundColor: accentColor,
             child: const Icon(Icons.add, color: Colors.white),
           ),
           body: Column(
@@ -69,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: bodySmall.copyWith(
                             fontWeight: FontWeight.bold,
                             fontSize: 24,
-                            color: Colors.black87,
+                            color: textColor,
                           ),
                         ),
                         // Logo centered
@@ -86,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             bookProvider.isSearching
                                 ? Icons.close
                                 : Icons.search,
-                            color: Colors.black87,
+                            color: textColor,
                           ),
                           onPressed: () => bookProvider.toggleSearch(),
                         ),
@@ -99,20 +104,27 @@ class _HomeScreenState extends State<HomeScreen> {
                           autofocus: true,
                           onChanged: (value) =>
                               bookProvider.setSearchQuery(value),
+                          style: TextStyle(color: textColor),
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: Colors.white,
-                            prefixIcon: const Icon(Icons.search),
+                            fillColor: searchFieldColor,
+                            prefixIcon: Icon(
+                              Icons.search,
+                              color: textColor.withValues(alpha: 0.7),
+                            ),
                             suffixIcon: bookProvider.searchQuery.isNotEmpty
                                 ? IconButton(
-                                    icon: const Icon(
+                                    icon: Icon(
                                       Icons.backspace,
-                                      color: Colors.grey,
+                                      color: textColor.withValues(alpha: 0.5),
                                     ),
                                     onPressed: () => bookProvider.clearSearch(),
                                   )
                                 : null,
                             hintText: "Search",
+                            hintStyle: TextStyle(
+                              color: textColor.withValues(alpha: 0.5),
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(30),
                               borderSide: BorderSide.none,
@@ -162,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           return const BookCardShimmer();
                         },
                       )
-                    : _buildBooksContent(bookProvider),
+                    : _buildBooksContent(context, bookProvider),
               ),
             ],
           ),
@@ -171,7 +183,16 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildBooksContent(BookProvider bookProvider) {
+  Widget _buildBooksContent(BuildContext context, BookProvider bookProvider) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryTextColor = isDark
+        ? whiteColorDark.withValues(alpha: 0.7)
+        : Colors.grey[700];
+    final tertiaryTextColor = isDark
+        ? whiteColorDark.withValues(alpha: 0.5)
+        : Colors.grey[500];
+    final accentColor = isDark ? primaryColorDark : primaryColor;
+
     final displayBooks = bookProvider.filteredBooks;
 
     if (displayBooks.isEmpty && bookProvider.searchQuery.isNotEmpty) {
@@ -182,20 +203,20 @@ class _HomeScreenState extends State<HomeScreen> {
             Icon(
               Icons.search_off,
               size: 64,
-              color: primaryColor.withValues(alpha: 0.5),
+              color: accentColor.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 16),
             Text(
               'No books found',
               style: bodyLarge.copyWith(
-                color: Colors.grey[700],
+                color: secondaryTextColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Try a different search term',
-              style: bodyMedium.copyWith(color: Colors.grey[500]),
+              style: bodyMedium.copyWith(color: tertiaryTextColor),
             ),
           ],
         ),

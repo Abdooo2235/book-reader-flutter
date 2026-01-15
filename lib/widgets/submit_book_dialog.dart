@@ -230,10 +230,20 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
   }
 
   void _showSuccessDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dialogColor = isDark ? surfaceColorDark : whiteColor;
+    final textColor = isDark ? whiteColorDark : blackColor;
+    final secondaryTextColor = isDark
+        ? whiteColorDark.withValues(alpha: 0.7)
+        : Colors.grey[700];
+    final accentColor = isDark ? primaryColorDark : primaryColor;
+    final successColor = isDark ? greenColorDark : greenColor;
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
+        backgroundColor: dialogColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -245,10 +255,10 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: greenColor.withValues(alpha: 0.1),
+                  color: successColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.check_circle, color: greenColor, size: 50),
+                child: Icon(Icons.check_circle, color: successColor, size: 50),
               ),
               const SizedBox(height: 24),
 
@@ -256,7 +266,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
               Text(
                 'Book Submitted Successfully!',
                 style: labelLarge.copyWith(
-                  color: blackColor,
+                  color: textColor,
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
@@ -266,7 +276,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
               // Message
               Text(
                 'Your book "${_titleController.text}" has been submitted for review.',
-                style: bodyMedium.copyWith(color: Colors.grey[700]),
+                style: bodyMedium.copyWith(color: secondaryTextColor),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
@@ -275,22 +285,22 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: primaryColor.withValues(alpha: 0.1),
+                  color: accentColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: primaryColor.withValues(alpha: 0.3),
+                    color: accentColor.withValues(alpha: 0.3),
                     width: 1,
                   ),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: primaryColor, size: 24),
+                    Icon(Icons.info_outline, color: accentColor, size: 24),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'Your book is pending admin approval. You will be notified once it\'s approved and published.',
                         style: bodySmall.copyWith(
-                          color: primaryColor,
+                          color: accentColor,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -306,7 +316,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
+                    backgroundColor: accentColor,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
@@ -328,17 +338,32 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dialogColor = isDark ? surfaceColorDark : whiteColor;
+    final headerColor = isDark
+        ? scaffoldBackgroundColorDark
+        : primaryColor.withValues(alpha: 0.05);
+    final textColor = isDark ? whiteColorDark : blackColor;
+    final secondaryTextColor = isDark
+        ? whiteColorDark.withValues(alpha: 0.6)
+        : Colors.grey[600];
+    final accentColor = isDark ? primaryColorDark : primaryColor;
+    final formFieldColor = isDark
+        ? scaffoldBackgroundColorDark
+        : scaffoldBackgroundColor;
+    final closeButtonColor = isDark ? surfaceColorDark : Colors.grey[100];
+
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       child: Container(
         constraints: const BoxConstraints(maxHeight: 700),
         decoration: BoxDecoration(
-          color: whiteColor,
+          color: dialogColor,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: primaryColor.withValues(alpha: 0.2),
+              color: accentColor.withValues(alpha: isDark ? 0.3 : 0.2),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -353,14 +378,14 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: primaryColor.withValues(alpha: 0.05),
+                  color: headerColor,
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20),
                   ),
                   border: Border(
                     bottom: BorderSide(
-                      color: primaryColor.withValues(alpha: 0.2),
+                      color: accentColor.withValues(alpha: 0.2),
                       width: 1,
                     ),
                   ),
@@ -373,29 +398,29 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: primaryColor.withValues(alpha: 0.1),
+                            color: accentColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
                             Icons.upload_file,
-                            color: primaryColor,
+                            color: accentColor,
                             size: 24,
                           ),
                         ),
                         const SizedBox(width: 12),
                         Text(
                           'Submit New Book',
-                          style: labelLarge.copyWith(color: blackColor),
+                          style: labelLarge.copyWith(color: textColor),
                         ),
                       ],
                     ),
                     IconButton(
-                      icon: Icon(Icons.close, color: Colors.grey[600]),
+                      icon: Icon(Icons.close, color: secondaryTextColor),
                       onPressed: _isSubmitting
                           ? null
                           : () => Navigator.pop(context),
                       style: IconButton.styleFrom(
-                        backgroundColor: Colors.grey[100],
+                        backgroundColor: closeButtonColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -417,12 +442,12 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                         controller: _titleController,
                         decoration: InputDecoration(
                           labelText: 'Title *',
-                          prefixIcon: Icon(Icons.title, color: primaryColor),
+                          prefixIcon: Icon(Icons.title, color: accentColor),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           filled: true,
-                          fillColor: scaffoldBackgroundColor,
+                          fillColor: formFieldColor,
                         ),
                         validator: (value) => value?.isEmpty ?? true
                             ? 'Please enter book title'
@@ -435,12 +460,12 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                         controller: _authorController,
                         decoration: InputDecoration(
                           labelText: 'Author *',
-                          prefixIcon: Icon(Icons.person, color: primaryColor),
+                          prefixIcon: Icon(Icons.person, color: accentColor),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           filled: true,
-                          fillColor: scaffoldBackgroundColor,
+                          fillColor: formFieldColor,
                         ),
                         validator: (value) => value?.isEmpty ?? true
                             ? 'Please enter author name'
@@ -457,13 +482,13 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                               labelText: 'Category *',
                               prefixIcon: Icon(
                                 Icons.category,
-                                color: primaryColor,
+                                color: accentColor,
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               filled: true,
-                              fillColor: scaffoldBackgroundColor,
+                              fillColor: formFieldColor,
                             ),
                             items: categoryProvider.categories
                                 .where((cat) => cat['id'] != null)
@@ -499,13 +524,13 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                                 labelText: 'File Type *',
                                 prefixIcon: Icon(
                                   Icons.description,
-                                  color: primaryColor,
+                                  color: accentColor,
                                 ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 filled: true,
-                                fillColor: scaffoldBackgroundColor,
+                                fillColor: formFieldColor,
                               ),
                               items: const [
                                 DropdownMenuItem(
@@ -532,13 +557,13 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                                 labelText: 'Pages *',
                                 prefixIcon: Icon(
                                   Icons.menu_book,
-                                  color: primaryColor,
+                                  color: accentColor,
                                 ),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 filled: true,
-                                fillColor: scaffoldBackgroundColor,
+                                fillColor: formFieldColor,
                               ),
                               keyboardType: TextInputType.number,
                               validator: (value) {
@@ -563,12 +588,12 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                         child: Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: scaffoldBackgroundColor,
+                            color: formFieldColor,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: _bookFile != null
                                   ? greenColor
-                                  : primaryColor.withValues(alpha: 0.2),
+                                  : accentColor.withValues(alpha: 0.2),
                               width: 2,
                             ),
                           ),
@@ -580,7 +605,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                                     : Icons.upload_file,
                                 color: _bookFile != null
                                     ? greenColor
-                                    : primaryColor,
+                                    : accentColor,
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -595,14 +620,14 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                                         fontWeight: FontWeight.w600,
                                         color: _bookFile != null
                                             ? greenColor
-                                            : blackColor,
+                                            : textColor,
                                       ),
                                     ),
                                     if (_bookFile != null)
                                       Text(
                                         _bookFile!.path.split('/').last,
                                         style: bodySmall.copyWith(
-                                          color: Colors.grey[600],
+                                          color: secondaryTextColor,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -611,7 +636,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                                       Text(
                                         'PDF or EPUB file (max 50MB)',
                                         style: bodySmall.copyWith(
-                                          color: Colors.grey[600],
+                                          color: secondaryTextColor,
                                         ),
                                       ),
                                   ],
@@ -633,12 +658,12 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                         child: Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: scaffoldBackgroundColor,
+                            color: formFieldColor,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: _coverImage != null
                                   ? greenColor
-                                  : primaryColor.withValues(alpha: 0.2),
+                                  : accentColor.withValues(alpha: 0.2),
                               width: 2,
                             ),
                           ),
@@ -650,7 +675,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                                     : Icons.image,
                                 color: _coverImage != null
                                     ? greenColor
-                                    : primaryColor,
+                                    : accentColor,
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -665,14 +690,14 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                                         fontWeight: FontWeight.w600,
                                         color: _coverImage != null
                                             ? greenColor
-                                            : blackColor,
+                                            : textColor,
                                       ),
                                     ),
                                     if (_coverImage != null)
                                       Text(
                                         _coverImage!.path.split('/').last,
                                         style: bodySmall.copyWith(
-                                          color: Colors.grey[600],
+                                          color: secondaryTextColor,
                                         ),
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -681,7 +706,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                                       Text(
                                         'JPG, PNG (recommended: 800x800)',
                                         style: bodySmall.copyWith(
-                                          color: Colors.grey[600],
+                                          color: secondaryTextColor,
                                         ),
                                       ),
                                   ],
@@ -704,14 +729,14 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                           labelText: 'Description *',
                           prefixIcon: Padding(
                             padding: const EdgeInsets.only(bottom: 60),
-                            child: Icon(Icons.description, color: primaryColor),
+                            child: Icon(Icons.description, color: accentColor),
                           ),
                           alignLabelWithHint: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           filled: true,
-                          fillColor: scaffoldBackgroundColor,
+                          fillColor: formFieldColor,
                         ),
                         maxLines: 4,
                         validator: (value) => value?.isEmpty ?? true
@@ -727,14 +752,14 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: scaffoldBackgroundColor,
+                  color: formFieldColor,
                   borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(20),
                     bottomRight: Radius.circular(20),
                   ),
                   border: Border(
                     top: BorderSide(
-                      color: primaryColor.withValues(alpha: 0.2),
+                      color: accentColor.withValues(alpha: 0.2),
                       width: 1,
                     ),
                   ),
@@ -751,7 +776,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                           horizontal: 24,
                           vertical: 12,
                         ),
-                        side: BorderSide(color: Colors.grey[400]!),
+                        side: BorderSide(color: secondaryTextColor as Color),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -759,7 +784,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                       child: Text(
                         'Cancel',
                         style: bodyMedium.copyWith(
-                          color: Colors.grey[700],
+                          color: secondaryTextColor,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -768,7 +793,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                     ElevatedButton(
                       onPressed: _isSubmitting ? null : _submitBook,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
+                        backgroundColor: accentColor,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,

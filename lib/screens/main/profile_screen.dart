@@ -36,6 +36,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? surfaceColorDark : whiteColor;
+    final textColor = isDark ? whiteColorDark : blackColor;
+    final secondaryTextColor = isDark
+        ? whiteColorDark.withValues(alpha: 0.6)
+        : Colors.grey[600];
+    final accentColor = isDark ? primaryColorDark : primaryColor;
+    final errorColor = isDark ? redColorDark : redColor;
+    final successColor = isDark ? greenColorDark : greenColor;
+
     return Consumer2<AuthProvider, PreferencesProvider>(
       builder: (context, authProvider, preferencesProvider, _) {
         final userName = authProvider.user?['name']?.toString() ?? 'User';
@@ -59,10 +69,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             height: 120,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: primaryColor, width: 3),
+                              border: Border.all(color: accentColor, width: 3),
                               boxShadow: [
                                 BoxShadow(
-                                  color: primaryColor.withValues(alpha: 0.2),
+                                  color: accentColor.withValues(alpha: 0.2),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),
@@ -70,13 +80,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             child: CircleAvatar(
                               radius: 57,
-                              backgroundColor: primaryColor.withValues(
+                              backgroundColor: accentColor.withValues(
                                 alpha: 0.1,
                               ),
                               child: Icon(
                                 Icons.person,
                                 size: 60,
-                                color: primaryColor,
+                                color: accentColor,
                               ),
                             ),
                           ),
@@ -87,9 +97,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               width: 36,
                               height: 36,
                               decoration: BoxDecoration(
-                                color: primaryColor,
+                                color: accentColor,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: whiteColor, width: 2),
+                                border: Border.all(color: cardColor, width: 2),
                               ),
                               child: IconButton(
                                 padding: EdgeInsets.zero,
@@ -107,7 +117,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           color: Colors.white,
                                         ),
                                       ),
-                                      backgroundColor: primaryColor,
+                                      backgroundColor: accentColor,
                                     ),
                                   );
                                 },
@@ -119,19 +129,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 16),
                       Text(
                         userName,
-                        style: labelLarge.copyWith(color: blackColor),
+                        style: labelLarge.copyWith(color: textColor),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         userEmail,
-                        style: bodyMedium.copyWith(color: Colors.grey[600]),
+                        style: bodyMedium.copyWith(color: secondaryTextColor),
                       ),
                     ],
                   ),
                 ),
 
                 Divider(
-                  color: primaryColor.withValues(alpha: 0.2),
+                  color: accentColor.withValues(alpha: 0.2),
                   thickness: 0.5,
                 ),
 
@@ -145,11 +155,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       // Change Name
                       _buildProfileOption(
+                        context: context,
                         icon: Icons.person_outline,
                         title: 'Change Name',
                         subtitle: userName,
                         onTap: () {
-                          // TODO: Show dialog to change name
                           _showChangeNameDialog();
                         },
                       ),
@@ -157,6 +167,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       // Change Password
                       _buildProfileOption(
+                        context: context,
                         icon: Icons.lock_outline,
                         title: 'Change Password',
                         subtitle: 'Update your password',
@@ -167,7 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 'Change password feature coming soon',
                                 style: bodyMedium.copyWith(color: Colors.white),
                               ),
-                              backgroundColor: primaryColor,
+                              backgroundColor: accentColor,
                             ),
                           );
                         },
@@ -177,15 +188,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // Light/Dark Mode
                       Container(
                         decoration: BoxDecoration(
-                          color: whiteColor,
+                          color: cardColor,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: primaryColor.withValues(alpha: 0.2),
+                            color: accentColor.withValues(alpha: 0.2),
                             width: 1,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: primaryColor.withValues(alpha: 0.1),
+                              color: accentColor.withValues(alpha: 0.1),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             ),
@@ -195,21 +206,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           leading: Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: primaryColor.withValues(alpha: 0.1),
+                              color: accentColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
                               isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                              color: primaryColor,
+                              color: accentColor,
                             ),
                           ),
                           title: Text(
                             'Theme Mode',
-                            style: labelSmall.copyWith(color: blackColor),
+                            style: labelSmall.copyWith(color: textColor),
                           ),
                           subtitle: Text(
                             isDarkMode ? 'Dark Mode' : 'Light Mode',
-                            style: bodySmall.copyWith(color: Colors.grey[600]),
+                            style: bodySmall.copyWith(
+                              color: secondaryTextColor,
+                            ),
                           ),
                           trailing: Switch(
                             value: isDarkMode,
@@ -245,7 +258,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           ),
                                         ],
                                       ),
-                                      backgroundColor: greenColor,
+                                      backgroundColor: successColor,
                                       behavior: SnackBarBehavior.floating,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
@@ -277,7 +290,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                           ),
                                         ],
                                       ),
-                                      backgroundColor: redColor,
+                                      backgroundColor: errorColor,
                                       behavior: SnackBarBehavior.floating,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(12),
@@ -288,7 +301,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 }
                               }
                             },
-                            activeThumbColor: primaryColor,
+                            activeThumbColor: accentColor,
                           ),
                         ),
                       ),
@@ -307,14 +320,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       onPressed: () => _handleLogout(context),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: BorderSide(color: redColor),
+                        side: BorderSide(color: errorColor),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                       child: Text(
                         'Logout',
-                        style: labelMedium.copyWith(color: redColor),
+                        style: labelMedium.copyWith(color: errorColor),
                       ),
                     ),
                   ),
@@ -330,25 +343,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileOption({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDark ? surfaceColorDark : whiteColor;
+    final textColor = isDark ? whiteColorDark : blackColor;
+    final secondaryTextColor = isDark
+        ? whiteColorDark.withValues(alpha: 0.6)
+        : Colors.grey[600];
+    final accentColor = isDark ? primaryColorDark : primaryColor;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         decoration: BoxDecoration(
-          color: whiteColor,
+          color: cardColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: primaryColor.withValues(alpha: 0.2),
+            color: accentColor.withValues(alpha: 0.2),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: primaryColor.withValues(alpha: 0.1),
+              color: accentColor.withValues(alpha: 0.1),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -358,17 +380,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
           leading: Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: primaryColor.withValues(alpha: 0.1),
+              color: accentColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: primaryColor),
+            child: Icon(icon, color: accentColor),
           ),
-          title: Text(title, style: labelSmall.copyWith(color: blackColor)),
+          title: Text(title, style: labelSmall.copyWith(color: textColor)),
           subtitle: Text(
             subtitle,
-            style: bodySmall.copyWith(color: Colors.grey[600]),
+            style: bodySmall.copyWith(color: secondaryTextColor),
           ),
-          trailing: Icon(Icons.chevron_right, color: primaryColor),
+          trailing: Icon(Icons.chevron_right, color: accentColor),
         ),
       ),
     );
