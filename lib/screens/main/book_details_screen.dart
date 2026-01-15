@@ -104,11 +104,12 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
                       : iconColor,
                 ),
                 onPressed: () async {
+                  final messenger = ScaffoldMessenger.of(context);
                   try {
                     await bookProvider.toggleFavorite(widget.book);
                   } catch (e) {
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      messenger.showSnackBar(
                         SnackBar(
                           content: Text(
                             'Failed to update favorite: ${e.toString()}',
