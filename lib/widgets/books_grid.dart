@@ -5,8 +5,18 @@ import 'package:flutter/material.dart';
 class BooksGrid extends StatelessWidget {
   final List<Map<String, dynamic>> books;
   final Function(Map<String, dynamic>)? onBookTap;
+  final bool isSelectionMode;
+  final Set<int> selectedBookIds;
+  final Map<int, Map<String, dynamic>>? progressMap;
 
-  const BooksGrid({super.key, required this.books, this.onBookTap});
+  const BooksGrid({
+    super.key,
+    required this.books,
+    this.onBookTap,
+    this.isSelectionMode = false,
+    this.selectedBookIds = const {},
+    this.progressMap,
+  });
 
   // Generate a color from a string (for consistent colors per book)
   Color _getColorFromString(String str) {
@@ -37,6 +47,7 @@ class BooksGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return GridView.builder(
       padding: const EdgeInsets.all(12),
+      physics: const AlwaysScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
         childAspectRatio: 0.48,
@@ -84,14 +95,84 @@ class BooksGrid extends StatelessWidget {
         coverUrl ??= book['cover_image']?.toString();
         coverUrl ??= book['cover_thumb_url']?.toString();
 
+        final bookId = book['id'];
+        final bookIdInt = bookId is int
+            ? bookId
+            : int.tryParse(bookId?.toString() ?? '');
+        final isSelected = bookIdInt != null && selectedBookIds.contains(bookIdInt);
+
+        // Get progress from progressMap if available (for reading tab)
+        if (progressMap != null && bookIdInt != null) {
+          final bookProgress = progressMap![bookIdInt];
+          if (bookProgress != null) {
+            final progressValue = bookProgress['progress_percentage'];
+            if (progressValue != null) {
+              if (progressValue is double) {
+                progress = progressValue;
+              } else if (progressValue is int) {
+                progress = progressValue.toDouble();
+              } else if (progressValue is String) {
+                progress = double.tryParse(progressValue) ?? progress;
+              } else if (progressValue is num) {
+                progress = progressValue.toDouble();
+              }
+            }
+          }
+        }
+
         return GestureDetector(
           onTap: () => onBookTap?.call(book),
-          child: BookCard(
-            title: book['title']?.toString() ?? 'Untitled',
-            author: book['author']?.toString(),
-            progress: progress,
-            coverColor: coverColor,
-            coverUrl: coverUrl,
+          child: Stack(
+            children: [
+              BookCard(
+                title: book['title']?.toString() ?? 'Untitled',
+                author: book['author']?.toString(),
+                progress: progress,
+                coverColor: coverColor,
+                coverUrl: coverUrl,
+                isSelected: isSelected,
+                showProgressCircle: progressMap != null, // Show circle only in reading tab
+              ),
+              if (isSelectionMode)
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? primaryColor
+                          : Colors.white.withValues(alpha: 0.95),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected
+                            ? primaryColor
+                            : Colors.grey.shade400,
+                        width: isSelected ? 0 : 2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: isSelected
+                        ? Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 18,
+                          )
+                        : Icon(
+                            Icons.circle_outlined,
+                            color: Colors.grey.shade600,
+                            size: 20,
+                          ),
+                  ),
+                ),
+            ],
           ),
         );
       },

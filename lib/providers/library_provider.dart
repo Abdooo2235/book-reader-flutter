@@ -254,7 +254,19 @@ class LibraryProvider extends BaseProvider {
       final progress = progressMap[bookId];
       if (progress == null) return false;
 
-      final percentage = progress['progress_percentage']?.toDouble() ?? 0.0;
+      final progressValue = progress['progress_percentage'];
+      double percentage = 0.0;
+      if (progressValue != null) {
+        if (progressValue is double) {
+          percentage = progressValue;
+        } else if (progressValue is int) {
+          percentage = progressValue.toDouble();
+        } else if (progressValue is String) {
+          percentage = double.tryParse(progressValue) ?? 0.0;
+        } else if (progressValue is num) {
+          percentage = progressValue.toDouble();
+        }
+      }
       return percentage > 0 && percentage < 100;
     }).toList();
   }
@@ -270,7 +282,19 @@ class LibraryProvider extends BaseProvider {
       final progress = progressMap[bookId];
       if (progress == null) return false;
 
-      final percentage = progress['progress_percentage']?.toDouble() ?? 0.0;
+      final progressValue = progress['progress_percentage'];
+      double percentage = 0.0;
+      if (progressValue != null) {
+        if (progressValue is double) {
+          percentage = progressValue;
+        } else if (progressValue is int) {
+          percentage = progressValue.toDouble();
+        } else if (progressValue is String) {
+          percentage = double.tryParse(progressValue) ?? 0.0;
+        } else if (progressValue is num) {
+          percentage = progressValue.toDouble();
+        }
+      }
       return percentage >= 100;
     }).toList();
   }
@@ -389,5 +413,57 @@ class LibraryProvider extends BaseProvider {
   bool isBookInCollection(int bookId, int collectionId) {
     final books = getCollectionBooks(collectionId);
     return books.any((book) => book['id'] == bookId);
+  }
+
+  // Remove book from library
+  Future<void> removeBookFromLibrary(int bookId) async {
+    setBusy(true);
+    try {
+      await _api.removeBookFromLibrary(bookId);
+      // Remove from local list
+      _libraryBooks.removeWhere((book) => book['id'] == bookId);
+      // Also remove from all collection books
+      for (var collectionId in _collectionBooks.keys) {
+        _collectionBooks[collectionId]?.removeWhere(
+          (book) => book['id'] == bookId,
+        );
+      }
+      setBusy(false);
+      notifyListeners();
+    } catch (e) {
+      setFailed(true);
+      setErrorMessage(e.toString());
+      setBusy(false);
+      rethrow;
+    }
+  }
+
+  // Remove multiple books from library
+  Future<void> removeBooksFromLibrary(List<int> bookIds) async {
+    setBusy(true);
+    try {
+      for (final bookId in bookIds) {
+        try {
+          await _api.removeBookFromLibrary(bookId);
+        } catch (e) {
+          debugPrint('Failed to remove book $bookId: $e');
+          // Continue with other books even if one fails
+        }
+      }
+      // Remove from local lists
+      _libraryBooks.removeWhere((book) => bookIds.contains(book['id']));
+      for (var collectionId in _collectionBooks.keys) {
+        _collectionBooks[collectionId]?.removeWhere(
+          (book) => bookIds.contains(book['id']),
+        );
+      }
+      setBusy(false);
+      notifyListeners();
+    } catch (e) {
+      setFailed(true);
+      setErrorMessage(e.toString());
+      setBusy(false);
+      rethrow;
+    }
   }
 }

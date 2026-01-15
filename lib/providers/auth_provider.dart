@@ -27,9 +27,6 @@ class AuthProvider extends BaseProvider {
     if (tempToken != null) {
       status = AuthStatus.authenticated;
       token = tempToken;
-      if (kDebugMode) {
-        print("TOKEN : $tempToken");
-      }
       // Load user profile
       try {
         await loadCurrentUser();

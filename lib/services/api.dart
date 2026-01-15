@@ -218,26 +218,6 @@ class Api {
     await _dio.delete('/my-books/$id');
   }
 
-  // ==================== CART ====================
-
-  Future<Map<String, dynamic>> getCart() async {
-    final response = await _dio.get('/cart');
-    return response.data;
-  }
-
-  Future<void> addBookToCart(int bookId) async {
-    await _dio.post('/cart/books/$bookId');
-  }
-
-  Future<void> removeBookFromCart(int bookId) async {
-    await _dio.delete('/cart/books/$bookId');
-  }
-
-  Future<Map<String, dynamic>> checkout() async {
-    final response = await _dio.post('/cart/checkout');
-    return response.data;
-  }
-
   // ==================== ORDERS ====================
 
   Future<Map<String, dynamic>> getOrders() async {
@@ -260,6 +240,10 @@ class Api {
   Future<Map<String, dynamic>> downloadBook(int bookId) async {
     final response = await _dio.get('/library/$bookId/download');
     return response.data;
+  }
+
+  Future<void> removeBookFromLibrary(int bookId) async {
+    await _dio.delete('/library/$bookId');
   }
 
   // ==================== FAVORITES ====================

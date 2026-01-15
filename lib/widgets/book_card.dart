@@ -8,6 +8,8 @@ class BookCard extends StatelessWidget {
   final double progress;
   final Color coverColor;
   final String? coverUrl;
+  final bool isSelected;
+  final bool showProgressCircle;
 
   const BookCard({
     super.key,
@@ -16,6 +18,8 @@ class BookCard extends StatelessWidget {
     required this.progress,
     required this.coverColor,
     this.coverUrl,
+    this.isSelected = false,
+    this.showProgressCircle = false,
   });
 
   @override
@@ -37,10 +41,18 @@ class BookCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: coverColor,
                   borderRadius: BorderRadius.circular(12),
+                  border: isSelected
+                      ? Border.all(
+                          color: primaryColor,
+                          width: 3,
+                        )
+                      : null,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withAlpha(25),
-                      blurRadius: 4,
+                      color: isSelected
+                          ? primaryColor.withValues(alpha: 0.5)
+                          : Colors.black.withAlpha(25),
+                      blurRadius: isSelected ? 8 : 4,
                       offset: const Offset(0, 2),
                     ),
                   ],
@@ -69,9 +81,16 @@ class BookCard extends StatelessWidget {
                       )
                     : _buildPlaceholder(),
               ),
-
-              // Progress Badge (Top Left)
-              if (progress > 0)
+              // Selection Overlay
+              if (isSelected)
+                Container(
+                  decoration: BoxDecoration(
+                    color: primaryColor.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              // Progress Badge (Top Left) - Only show if not using circle at bottom
+              if (progress > 0 && !showProgressCircle)
                 Positioned(
                   top: 8,
                   left: 8,
@@ -95,29 +114,55 @@ class BookCard extends StatelessWidget {
                   ),
                 ),
 
-              // Play/Action Button (Bottom Right)
+              // Progress Circle or Play Button (Bottom Right)
               Positioned(
                 bottom: 8,
                 right: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(230),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(25),
-                        blurRadius: 2,
-                        offset: const Offset(0, 1),
+                child: showProgressCircle && progress > 0
+                    ? Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(230),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(25),
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            "${progress.toInt()}%",
+                            style: bodySmall.copyWith(
+                              color: blackColor,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(230),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(25),
+                              blurRadius: 2,
+                              offset: const Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          CupertinoIcons.play_fill,
+                          size: 14,
+                          color: blackColor,
+                        ),
                       ),
-                    ],
-                  ),
-                  child: Icon(
-                    CupertinoIcons.play_fill,
-                    size: 14,
-                    color: blackColor,
-                  ),
-                ),
               ),
             ],
           ),

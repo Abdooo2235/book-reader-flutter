@@ -1,12 +1,14 @@
 import 'package:book_reader_app/helpers/consts.dart';
 import 'package:book_reader_app/providers/auth_provider.dart';
-import 'package:book_reader_app/screens/main/cart_screen.dart';
+import 'package:book_reader_app/providers/book_provider.dart';
 import 'package:book_reader_app/screens/main/favourite_screen.dart';
 import 'package:book_reader_app/screens/main/home_screen.dart';
 import 'package:book_reader_app/screens/main/library_screen.dart';
 import 'package:book_reader_app/screens/main/profile_screen.dart';
+import 'package:book_reader_app/widgets/submit_book_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class TabsScreen extends StatefulWidget {
@@ -22,10 +24,20 @@ class _TabsScreenState extends State<TabsScreen> {
   final List<Widget> screens = [
     HomeScreen(),
     LibraryScreen(),
-    CartScreen(),
     FavouriteScreen(),
     ProfileScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Load favorites when tabs screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final bookProvider = Provider.of<BookProvider>(context, listen: false);
+      bookProvider.loadFavorites();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -39,8 +51,37 @@ class _TabsScreenState extends State<TabsScreen> {
       builder: (context, authConsumer, _) {
         return Scaffold(
           // drawer: CustomDrawer(),
-          appBar: AppBar(backgroundColor: backgroundColor, toolbarHeight: 0),
+          appBar: AppBar(
+            backgroundColor: backgroundColor,
+            toolbarHeight: 0,
+            systemOverlayStyle: SystemUiOverlayStyle(
+              statusBarColor: isDark
+                  ? scaffoldBackgroundColorDark
+                  : scaffoldBackgroundColor,
+
+              statusBarIconBrightness: isDark
+                  ? Brightness.light
+                  : Brightness.dark,
+              statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+            ),
+          ),
           body: IndexedStack(index: currentIndex, children: screens),
+          floatingActionButton: currentIndex == 0
+              ? Builder(
+                  builder: (context) {
+                    return FloatingActionButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => const SubmitBookDialog(),
+                        );
+                      },
+                      backgroundColor: activeColor,
+                      child: const Icon(Icons.add, color: Colors.white),
+                    );
+                  },
+                )
+              : null,
           bottomNavigationBar: Container(
             decoration: BoxDecoration(
               color: navBarColor,
@@ -88,12 +129,6 @@ class _TabsScreenState extends State<TabsScreen> {
                     label: "Library",
                     icon: Icon(CupertinoIcons.book),
                     activeIcon: Icon(CupertinoIcons.book_fill),
-                    backgroundColor: navBarColor,
-                  ),
-                  BottomNavigationBarItem(
-                    label: "Cart",
-                    icon: Icon(CupertinoIcons.shopping_cart),
-                    activeIcon: Icon(CupertinoIcons.cart_fill),
                     backgroundColor: navBarColor,
                   ),
                   BottomNavigationBarItem(

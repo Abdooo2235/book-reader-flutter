@@ -26,6 +26,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
   int _currentPage = 1;
   int _totalPages = 0;
   bool _isControlsVisible = true;
+  bool _isMarkingAsRead = false;
 
   // Download progress
   final ValueNotifier<double> _downloadProgress = ValueNotifier(0.0);
@@ -223,6 +224,13 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
       _totalPages = _pdfController?.pageCount ?? 0;
     });
     _saveProgress();
+    
+    // Show controls when reaching last page to display Done button
+    if (_currentPage >= _totalPages && _totalPages > 0) {
+      setState(() {
+        _isControlsVisible = true;
+      });
+    }
   }
 
   void _onDocumentLoaded(PdfDocumentLoadedDetails details) {
@@ -263,6 +271,79 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
       }
     } catch (e) {
       debugPrint('Failed to save progress: $e');
+    }
+  }
+
+  Future<void> _markAsReadAndClose() async {
+    if (_isMarkingAsRead) return;
+
+    setState(() {
+      _isMarkingAsRead = true;
+    });
+
+    try {
+      final progressProvider = Provider.of<ProgressProvider>(
+        context,
+        listen: false,
+      );
+      final libraryProvider = Provider.of<LibraryProvider>(
+        context,
+        listen: false,
+      );
+      final bookId = widget.book['id'];
+      final totalPages = widget.book['number_of_pages'] ?? _totalPages;
+
+      // Update progress to 100%
+      await progressProvider.updateProgress(
+        bookId: bookId,
+        lastPage: totalPages > 0 ? totalPages : _totalPages,
+        totalPages: totalPages > 0 ? totalPages : _totalPages,
+      );
+
+      // Mark as completed
+      await libraryProvider.markAsCompleted(bookId);
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Book marked as read!',
+                    style: bodyMedium.copyWith(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: greenColor,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+
+      // Navigate back
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isMarkingAsRead = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to mark as read: ${e.toString()}',
+              style: bodyMedium.copyWith(color: Colors.white),
+            ),
+            backgroundColor: redColor,
+          ),
+        );
+      }
     }
   }
 
@@ -382,6 +463,47 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      // Done button - Show when on last page
+                      if (_totalPages > 0 && _currentPage >= _totalPages)
+                        Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.only(bottom: 16),
+                          child: ElevatedButton.icon(
+                            onPressed: _isMarkingAsRead ? null : _markAsReadAndClose,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: greenColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 16,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            icon: _isMarkingAsRead
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : const Icon(Icons.check_circle, size: 24),
+                            label: Text(
+                              _isMarkingAsRead
+                                  ? 'Marking as read...'
+                                  : 'Done - Mark as Read',
+                              style: labelMedium.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
                       // Page indicator
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
