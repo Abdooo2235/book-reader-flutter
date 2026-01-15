@@ -2,18 +2,10 @@ import 'package:book_reader_app/helpers/consts.dart';
 import 'package:book_reader_app/providers/book_provider.dart';
 import 'package:book_reader_app/providers/library_provider.dart';
 import 'package:book_reader_app/screens/main/book_reader_screen.dart';
-<<<<<<< HEAD
-import 'package:book_reader_app/services/api.dart';
-import 'package:provider/provider.dart';
-
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-=======
 import 'package:provider/provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
->>>>>>> origin/zakaria
 
 class BookDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> book;
@@ -25,13 +17,7 @@ class BookDetailsScreen extends StatefulWidget {
 }
 
 class _BookDetailsScreenState extends State<BookDetailsScreen> {
-<<<<<<< HEAD
-  bool _isAddingToCart = false;
   bool _isDownloading = false;
-  final Api _api = Api();
-=======
-  bool _isDownloading = false;
->>>>>>> origin/zakaria
 
   @override
   Widget build(BuildContext context) {
@@ -96,14 +82,11 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
       appBar: AppBar(
         backgroundColor: backgroundColor,
         elevation: 0,
-<<<<<<< HEAD
-=======
         systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
           statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
           statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
         ),
->>>>>>> origin/zakaria
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, color: iconColor),
           onPressed: () => Navigator.pop(context),
@@ -120,10 +103,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
                       ? (isDark ? redColorDark : Colors.red)
                       : iconColor,
                 ),
-<<<<<<< HEAD
-                onPressed: () {
-                  bookProvider.toggleFavorite(widget.book);
-=======
                 onPressed: () async {
                   try {
                     await bookProvider.toggleFavorite(widget.book);
@@ -140,7 +119,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
                       );
                     }
                   }
->>>>>>> origin/zakaria
                 },
               );
             },
@@ -243,46 +221,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
             // Action Buttons
             SizedBox(
               width: double.infinity,
-<<<<<<< HEAD
-              child: ElevatedButton(
-                onPressed: _isAddingToCart ? null : _addToCart,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: accentColor,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: _isAddingToCart
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(CupertinoIcons.cart, color: Colors.white),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Add to Cart',
-                            style: bodyMedium.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-=======
->>>>>>> origin/zakaria
               child: OutlinedButton(
                 onPressed: _isDownloading ? null : _downloadAndRead,
                 style: OutlinedButton.styleFrom(
@@ -323,34 +261,6 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
     );
   }
 
-<<<<<<< HEAD
-  Future<void> _addToCart() async {
-    final bookId = widget.book['id'];
-    if (bookId == null) {
-      _showSnackBar('Unable to add book to cart', isError: true);
-      return;
-    }
-
-    setState(() => _isAddingToCart = true);
-
-    try {
-      await _api.addBookToCart(bookId);
-      if (mounted) {
-        _showSnackBar('Added to cart successfully');
-      }
-    } catch (e) {
-      if (mounted) {
-        _showSnackBar('Failed to add to cart: ${e.toString()}', isError: true);
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isAddingToCart = false);
-      }
-    }
-  }
-
-=======
->>>>>>> origin/zakaria
   Future<void> _downloadAndRead() async {
     final bookId = widget.book['id'];
     if (bookId == null) {

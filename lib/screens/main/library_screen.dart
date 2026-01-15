@@ -19,7 +19,7 @@ class _LibraryScreenState extends State<LibraryScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   bool _isSelectionMode = false;
-  Set<int> _selectedBookIds = {};
+  final Set<int> _selectedBookIds = {};
 
   @override
   void initState() {

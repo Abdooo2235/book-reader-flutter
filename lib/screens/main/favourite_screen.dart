@@ -6,12 +6,6 @@ import 'package:provider/provider.dart';
 
 import 'package:flutter/material.dart';
 
-<<<<<<< HEAD
-class FavouriteScreen extends StatelessWidget {
-  const FavouriteScreen({super.key});
-
-  @override
-=======
 class FavouriteScreen extends StatefulWidget {
   const FavouriteScreen({super.key});
 
@@ -31,7 +25,6 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
   }
 
   @override
->>>>>>> origin/zakaria
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? whiteColorDark : blackColor;
@@ -64,49 +57,6 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
           ),
           Divider(color: accentColor, thickness: 0.25),
           Expanded(
-<<<<<<< HEAD
-            child: Consumer<BookProvider>(
-              builder: (context, bookProvider, child) {
-                final favorites = bookProvider.favorites;
-
-                if (favorites.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.favorite_border,
-                          size: 64,
-                          color: accentColor.withValues(alpha: 0.5),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No favourites yet',
-                          style: bodyLarge.copyWith(color: secondaryTextColor),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Add books to your favourites',
-                          style: bodyMedium.copyWith(color: tertiaryTextColor),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return BooksGrid(
-                  books: favorites,
-                  onBookTap: (book) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => BookDetailsScreen(book: book),
-                      ),
-                    );
-                  },
-                );
-              },
-=======
             child: RefreshIndicator(
               onRefresh: () async {
                 final bookProvider = Provider.of<BookProvider>(
@@ -170,7 +120,6 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
                   );
                 },
               ),
->>>>>>> origin/zakaria
             ),
           ),
         ],

@@ -26,10 +26,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
   int _currentPage = 1;
   int _totalPages = 0;
   bool _isControlsVisible = true;
-<<<<<<< HEAD
-=======
   bool _isMarkingAsRead = false;
->>>>>>> origin/zakaria
 
   // Download progress
   final ValueNotifier<double> _downloadProgress = ValueNotifier(0.0);
@@ -64,77 +61,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
       await progressProvider.loadBookProgress(bookId);
       final lastPage = progressProvider.getLastPage(bookId) ?? 1;
 
-<<<<<<< HEAD
-      // Always mark book as reading when opening
-      try {
-        await libraryProvider.markAsReading(bookId);
-        debugPrint('Marked book $bookId as reading');
-      } catch (e) {
-        debugPrint('Failed to mark as reading: $e');
-      }
-
-      // Initialize progress if this is first time reading (page 0 or null)
-      if (lastPage <= 1) {
-        try {
-          await progressProvider.updateProgress(
-            bookId: bookId,
-            lastPage: 1,
-            totalPages: widget.book['number_of_pages'] ?? 100,
-          );
-          debugPrint('Initialized progress for book $bookId');
-        } catch (e) {
-          debugPrint('Failed to initialize progress: $e');
-        }
-      }
-
-      String? downloadUrl;
-      String? fileType = widget.book['file_type']?.toString() ?? 'pdf';
-
-      debugPrint('Book data: ${widget.book}');
-
-      // ALWAYS try to get from API first to ensure we get the proxy URL
-      // This is critical because the direct URL in the book object might be external
-      // and blocked by CORS/User-Agent checks on mobile
-      try {
-        final downloadResponse = await libraryProvider.downloadBook(bookId);
-
-        debugPrint('Download API response: $downloadResponse');
-
-        if (downloadResponse != null) {
-          downloadUrl =
-              downloadResponse['file_url']?.toString() ??
-              downloadResponse['book_file_url']?.toString() ??
-              downloadResponse['data']?['file_url']?.toString() ??
-              downloadResponse['download_url']?.toString() ??
-              downloadResponse['data']?['book_file_url']?.toString();
-
-          fileType =
-              downloadResponse['file_type']?.toString() ??
-              downloadResponse['data']?['file_type']?.toString() ??
-              fileType;
-
-          debugPrint('Download URL from API: $downloadUrl');
-        }
-      } catch (e) {
-        debugPrint('Download API error: $e');
-      }
-
-      // Fallback: If API failed, try to get from book object
-      if (downloadUrl == null || downloadUrl.isEmpty) {
-        debugPrint('Falling back to book object URL');
-        downloadUrl =
-            widget.book['book_file_url']?.toString() ??
-            widget.book['file_url']?.toString() ??
-            widget.book['book_file']?.toString() ??
-            widget.book['download_url']?.toString();
-      }
-
-      // Check if we have a valid URL
-      if (downloadUrl == null || downloadUrl.isEmpty) {
-        setState(() {
-          _error =
-              'This book does not have a PDF file available yet. Please check back later.';
-=======
       // Mark book as reading if not already marked
       if (lastPage <= 1) {
         try {
@@ -185,7 +111,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
       if (downloadUrl.isEmpty) {
         setState(() {
           _error = 'Book file not available. Please try again later.';
->>>>>>> origin/zakaria
           _isLoading = false;
         });
         return;
@@ -245,28 +170,9 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
     final filePath = '${appDir.path}/book_$bookId.$extension';
     final file = File(filePath);
 
-<<<<<<< HEAD
-    // Return cached file if exists and is valid (larger than 10KB - dummy PDFs are tiny)
-    if (file.existsSync()) {
-      final fileSize = file.lengthSync();
-      debugPrint('Cached file size: $fileSize bytes');
-
-      // If file is larger than 10KB, it's likely a real PDF
-      if (fileSize > 10 * 1024) {
-        debugPrint('Using cached file: $filePath');
-        return filePath;
-      } else {
-        // Small file - likely dummy PDF, delete and re-download
-        debugPrint(
-          'Cached file is too small ($fileSize bytes), re-downloading...',
-        );
-        file.deleteSync();
-      }
-=======
     // Return cached file if exists
     if (file.existsSync()) {
       return filePath;
->>>>>>> origin/zakaria
     }
 
     // Show download progress dialog
@@ -318,8 +224,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
       _totalPages = _pdfController?.pageCount ?? 0;
     });
     _saveProgress();
-<<<<<<< HEAD
-=======
     
     // Show controls when reaching last page to display Done button
     if (_currentPage >= _totalPages && _totalPages > 0) {
@@ -327,7 +231,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
         _isControlsVisible = true;
       });
     }
->>>>>>> origin/zakaria
   }
 
   void _onDocumentLoaded(PdfDocumentLoadedDetails details) {
@@ -371,8 +274,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
     }
   }
 
-<<<<<<< HEAD
-=======
   Future<void> _markAsReadAndClose() async {
     if (_isMarkingAsRead) return;
 
@@ -446,7 +347,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
     }
   }
 
->>>>>>> origin/zakaria
   void _toggleControls() {
     setState(() {
       _isControlsVisible = !_isControlsVisible;
@@ -563,8 +463,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-<<<<<<< HEAD
-=======
                       // Done button - Show when on last page
                       if (_totalPages > 0 && _currentPage >= _totalPages)
                         Container(
@@ -606,7 +504,6 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                             ),
                           ),
                         ),
->>>>>>> origin/zakaria
                       // Page indicator
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,

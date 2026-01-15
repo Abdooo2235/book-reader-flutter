@@ -665,7 +665,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                           }
 
                           return DropdownButtonFormField<int>(
-                            value: _selectedCategoryId,
+                            initialValue: _selectedCategoryId,
                             decoration: InputDecoration(
                               labelText: 'Category *',
                               prefixIcon: Icon(
