@@ -282,38 +282,106 @@ class LibraryProvider extends BaseProvider {
 
   // Mark book as reading (add to Reading collection)
   Future<void> markAsReading(int bookId) async {
-    // Find "Reading" collection
-    final readingCollection = _collections.firstWhere(
-      (c) =>
-          c['name']?.toString().toLowerCase().contains('reading') == true ||
-          c['type']?.toString().toLowerCase() == 'reading',
-      orElse: () => <String, dynamic>{},
-    );
+    try {
+      // Ensure collections are loaded
+      if (_collections.isEmpty) {
+        await loadCollections();
+      }
 
-    if (readingCollection.isNotEmpty && readingCollection['id'] != null) {
-      await addBookToCollection(
-        collectionId: readingCollection['id'],
-        bookId: bookId,
+      // Find "Reading" collection
+      var readingCollection = _collections.firstWhere(
+        (c) =>
+            c['name']?.toString().toLowerCase() == 'reading' ||
+            c['type']?.toString().toLowerCase() == 'reading',
+        orElse: () => <String, dynamic>{},
       );
+
+      // If no Reading collection found, create one
+      if (readingCollection.isEmpty) {
+        try {
+          final response = await _api.createCollection('Reading');
+          if (response['success'] == true && response['data'] != null) {
+            readingCollection = response['data'];
+            _collections.add(readingCollection);
+          }
+        } catch (e) {
+          debugPrint('Failed to create Reading collection: $e');
+        }
+      }
+
+      if (readingCollection.isNotEmpty && readingCollection['id'] != null) {
+        try {
+          await addBookToCollection(
+            collectionId: readingCollection['id'],
+            bookId: bookId,
+          );
+        } catch (e) {
+          // Book might already be in collection, which is fine
+          debugPrint('Add to Reading collection: $e');
+        }
+      }
+
+      // Reload library to include the new book
+      await loadLibrary();
+    } catch (e) {
+      debugPrint('markAsReading error: $e');
+      // Don't throw - this shouldn't block reading
     }
   }
 
   // Mark book as completed (add to Already Read collection)
   Future<void> markAsCompleted(int bookId) async {
-    // Find "Already Read" or "Completed" collection
-    final completedCollection = _collections.firstWhere(
-      (c) =>
-          c['name']?.toString().toLowerCase().contains('read') == true ||
-          c['name']?.toString().toLowerCase().contains('completed') == true ||
-          c['type']?.toString().toLowerCase() == 'completed',
-      orElse: () => <String, dynamic>{},
-    );
+    try {
+      // Ensure collections are loaded
+      if (_collections.isEmpty) {
+        await loadCollections();
+      }
 
-    if (completedCollection.isNotEmpty && completedCollection['id'] != null) {
-      await addBookToCollection(
-        collectionId: completedCollection['id'],
-        bookId: bookId,
+      // Find "Already Read" collection (exact match first)
+      var completedCollection = _collections.firstWhere(
+        (c) => c['name']?.toString().toLowerCase() == 'already read',
+        orElse: () => <String, dynamic>{},
       );
+
+      // Fallback to "Completed" collection
+      if (completedCollection.isEmpty) {
+        completedCollection = _collections.firstWhere(
+          (c) =>
+              c['name']?.toString().toLowerCase() == 'completed' ||
+              c['type']?.toString().toLowerCase() == 'completed',
+          orElse: () => <String, dynamic>{},
+        );
+      }
+
+      // Create if not found
+      if (completedCollection.isEmpty) {
+        try {
+          final response = await _api.createCollection('Already Read');
+          if (response['success'] == true && response['data'] != null) {
+            completedCollection = response['data'];
+            _collections.add(completedCollection);
+          }
+        } catch (e) {
+          debugPrint('Failed to create Already Read collection: $e');
+        }
+      }
+
+      if (completedCollection.isNotEmpty && completedCollection['id'] != null) {
+        try {
+          await addBookToCollection(
+            collectionId: completedCollection['id'],
+            bookId: bookId,
+          );
+        } catch (e) {
+          // Book might already be in collection
+          debugPrint('Add to Already Read collection: $e');
+        }
+      }
+
+      // Reload library
+      await loadLibrary();
+    } catch (e) {
+      debugPrint('markAsCompleted error: $e');
     }
   }
 
