@@ -254,7 +254,13 @@ class LibraryProvider extends BaseProvider {
       final progress = progressMap[bookId];
       if (progress == null) return false;
 
-      final percentage = progress['progress_percentage']?.toDouble() ?? 0.0;
+      final rawPercentage = progress['progress_percentage'];
+      double percentage = 0.0;
+      if (rawPercentage is num) {
+        percentage = rawPercentage.toDouble();
+      } else if (rawPercentage is String) {
+        percentage = double.tryParse(rawPercentage) ?? 0.0;
+      }
       return percentage > 0 && percentage < 100;
     }).toList();
   }
@@ -270,7 +276,13 @@ class LibraryProvider extends BaseProvider {
       final progress = progressMap[bookId];
       if (progress == null) return false;
 
-      final percentage = progress['progress_percentage']?.toDouble() ?? 0.0;
+      final rawPercentage = progress['progress_percentage'];
+      double percentage = 0.0;
+      if (rawPercentage is num) {
+        percentage = rawPercentage.toDouble();
+      } else if (rawPercentage is String) {
+        percentage = double.tryParse(rawPercentage) ?? 0.0;
+      }
       return percentage >= 100;
     }).toList();
   }
