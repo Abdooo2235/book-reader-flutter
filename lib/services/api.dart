@@ -22,8 +22,11 @@ class Api {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
+        connectTimeout: const Duration(seconds: 60),
+        receiveTimeout: const Duration(seconds: 120),
+        sendTimeout: const Duration(
+          seconds: 300,
+        ), // 5 min for large file uploads
       ),
     );
 
@@ -185,6 +188,16 @@ class Api {
     File? coverImage,
   }) async {
     try {
+      // Log file info for debugging
+      if (bookFile != null) {
+        final fileSize = await bookFile.length();
+        debugPrint('Book file path: ${bookFile.path}');
+        debugPrint(
+          'Book file size: ${(fileSize / 1024 / 1024).toStringAsFixed(2)} MB',
+        );
+        debugPrint('Book file exists: ${await bookFile.exists()}');
+      }
+
       final formData = FormData.fromMap({
         'title': title,
         'author': author,
@@ -208,6 +221,7 @@ class Api {
           ),
       });
 
+      debugPrint('Submitting book to /books endpoint...');
       final response = await _dio.post('/books', data: formData);
 
       // Handle different response types
