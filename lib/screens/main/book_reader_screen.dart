@@ -185,9 +185,22 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
     final filePath = '${appDir.path}/book_$bookId.$extension';
     final file = File(filePath);
 
-    // Return cached file if exists
+    // Return cached file if exists and is valid (larger than 10KB - dummy PDFs are tiny)
     if (file.existsSync()) {
-      return filePath;
+      final fileSize = file.lengthSync();
+      debugPrint('Cached file size: $fileSize bytes');
+
+      // If file is larger than 10KB, it's likely a real PDF
+      if (fileSize > 10 * 1024) {
+        debugPrint('Using cached file: $filePath');
+        return filePath;
+      } else {
+        // Small file - likely dummy PDF, delete and re-download
+        debugPrint(
+          'Cached file is too small ($fileSize bytes), re-downloading...',
+        );
+        file.deleteSync();
+      }
     }
 
     // Show download progress dialog
