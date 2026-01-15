@@ -68,7 +68,7 @@ class _SignupScreenState extends State<SignupScreen> {
   Future<void> _handleSignup() async {
     if (_formKey.currentState!.validate()) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      
+
       // Show loading indicator
       if (mounted) {
         UiUtils.showLoadingDialog(context);
@@ -85,12 +85,10 @@ class _SignupScreenState extends State<SignupScreen> {
         if (mounted) {
           // Close loading dialog
           UiUtils.closeDialog(context);
-          
+
           // Navigate to home screen and clear navigation stack
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-              builder: (context) => const TabsScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const TabsScreen()),
             (route) => false,
           );
         }
@@ -98,10 +96,12 @@ class _SignupScreenState extends State<SignupScreen> {
         if (mounted) {
           // Close loading dialog
           UiUtils.closeDialog(context);
-          
+
           // Get error message from provider
-          final errorMsg = authProvider.errorMessage ?? 'Registration failed. Please try again.';
-          
+          final errorMsg =
+              authProvider.errorMessage ??
+              'Registration failed. Please try again.';
+
           // Show error message
           UiUtils.showErrorSnackBar(context, errorMsg);
         }
@@ -115,17 +115,17 @@ class _SignupScreenState extends State<SignupScreen> {
       backgroundColor: scaffoldBackgroundColor,
       body: SafeArea(
         child: Center(
-        child: SingleChildScrollView(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: spacingLarge),
-          child: Form(
-            key: _formKey,
+            child: Form(
+              key: _formKey,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(height: MediaQuery.of(context).size.height * 0.04),
                   // App Logo
                   Padding(
-                    padding: const EdgeInsets.only(bottom: spacingLarge),
+                    padding: const EdgeInsets.only(bottom: spacingSmall),
                     child: AppLogo.login(),
                   ),
                   const SizedBox(height: spacingMedium),
@@ -173,7 +173,8 @@ class _SignupScreenState extends State<SignupScreen> {
                     obsecureText: obsecurePasswordConfirmation,
                     suffixWidget: GestureDetector(
                       onTap: () => setState(() {
-                        obsecurePasswordConfirmation = !obsecurePasswordConfirmation;
+                        obsecurePasswordConfirmation =
+                            !obsecurePasswordConfirmation;
                       }),
                       child: Icon(
                         obsecurePasswordConfirmation
@@ -192,7 +193,9 @@ class _SignupScreenState extends State<SignupScreen> {
                   ),
                   const SizedBox(height: spacingMedium),
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: spacingMedium),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: spacingMedium,
+                    ),
                     child: Consumer<AuthProvider>(
                       builder: (context, authProvider, _) {
                         return SizedBox(
@@ -203,25 +206,31 @@ class _SignupScreenState extends State<SignupScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: primaryColor,
                               foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(borderRadiusMedium),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  borderRadiusMedium,
+                                ),
                               ),
                               elevation: 0,
+                            ),
+                            child: authProvider.busy
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    "Sign Up",
+                                    style: labelMedium.copyWith(
+                                      color: Colors.white,
+                                    ),
+                                  ),
                           ),
-                          child: authProvider.busy
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                  ),
-                                )
-                              : Text(
-                                  "Sign Up",
-                                  style: labelMedium.copyWith(color: Colors.white),
-                                  ),
-                                ),
                         );
                       },
                     ),
@@ -254,7 +263,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     ],
                   ),
                   SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-              ],
+                ],
               ),
             ),
           ),

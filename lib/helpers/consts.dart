@@ -16,13 +16,9 @@ const Color redColor = Color(0xffB5533C);
 const Color greenColor = Color(0xff6B8E4E);
 
 // Dark mode colors
-const Color primaryColorDark = Color(
-  0xffC89B7B,
-);
-const Color scaffoldBackgroundColorDark = Color(
-  0xff1C1410,
-);
-const Color surfaceColorDark = Color(0xff241A15); 
+const Color primaryColorDark = Color(0xffC89B7B);
+const Color scaffoldBackgroundColorDark = Color(0xff1C1410);
+const Color surfaceColorDark = Color(0xff241A15);
 const Color whiteColorDark = Color(0xffEFE6DC);
 const Color blackColorDark = Color(0xff120C09);
 const Color redColorDark = Color(0xffC96A54);
@@ -39,7 +35,7 @@ const double logoSizeSmall = 32.0;
 const double logoSizeMedium = 56.0;
 const double logoSizeLarge = 80.0;
 const double logoSizeSplash = 150.0;
-const double logoSizeLogin = 130.0;
+const double logoSizeLogin = 250.0;
 
 // Spacing
 const double spacingSmall = 8.0;

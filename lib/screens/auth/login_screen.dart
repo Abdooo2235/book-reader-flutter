@@ -18,8 +18,12 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  TextEditingController email = TextEditingController(text: kDebugMode ? 'test@gmail.com' : '');
-  TextEditingController password = TextEditingController(text: kDebugMode ? 'password' : '');
+  TextEditingController email = TextEditingController(
+    text: kDebugMode ? 'test@gmail.com' : '',
+  );
+  TextEditingController password = TextEditingController(
+    text: kDebugMode ? 'password' : '',
+  );
   bool obsecurePassword = true;
 
   String? validator(String? value) {
@@ -106,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(height: MediaQuery.of(context).size.height * 0.08),
                   // App Logo
                   Padding(
-                    padding: const EdgeInsets.only(bottom: spacingXLarge),
+                    padding: const EdgeInsets.only(bottom: spacingSmall),
                     child: AppLogo.login(),
                   ),
                   const SizedBox(height: spacingLarge),
