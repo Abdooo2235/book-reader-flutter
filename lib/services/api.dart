@@ -197,7 +197,16 @@ class Api {
     });
 
     final response = await _dio.post('/books', data: formData);
-    return response.data;
+
+    // Handle different response types
+    if (response.data is Map<String, dynamic>) {
+      return response.data;
+    } else if (response.data is String) {
+      // Try to parse string as JSON, otherwise wrap it
+      return {'success': true, 'message': response.data};
+    } else {
+      return {'success': true, 'data': response.data};
+    }
   }
 
   Future<Map<String, dynamic>> getMySubmittedBooks() async {
