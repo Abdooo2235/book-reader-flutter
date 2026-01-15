@@ -192,9 +192,19 @@ class Api {
         'file_type': fileType,
         'number_of_pages': numberOfPages,
         if (bookFile != null)
-          'book_file': await MultipartFile.fromFile(bookFile.path),
+          'book_file': await MultipartFile.fromFile(
+            bookFile.path,
+            filename: bookFile.path.split('/').last.split('\\').last,
+            contentType: DioMediaType.parse(
+              fileType == 'pdf' ? 'application/pdf' : 'application/epub+zip',
+            ),
+          ),
         if (coverImage != null)
-          'cover_image': await MultipartFile.fromFile(coverImage.path),
+          'cover_image': await MultipartFile.fromFile(
+            coverImage.path,
+            filename: coverImage.path.split('/').last.split('\\').last,
+            contentType: DioMediaType.parse('image/jpeg'),
+          ),
       });
 
       final response = await _dio.post('/books', data: formData);
