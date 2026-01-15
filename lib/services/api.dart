@@ -183,29 +183,62 @@ class Api {
     File? bookFile,
     File? coverImage,
   }) async {
-    final formData = FormData.fromMap({
-      'title': title,
-      'author': author,
-      'description': description,
-      'category_id': categoryId,
-      'file_type': fileType,
-      'number_of_pages': numberOfPages,
-      if (bookFile != null)
-        'book_file': await MultipartFile.fromFile(bookFile.path),
-      if (coverImage != null)
-        'cover_image': await MultipartFile.fromFile(coverImage.path),
-    });
+    try {
+      final formData = FormData.fromMap({
+        'title': title,
+        'author': author,
+        'description': description,
+        'category_id': categoryId,
+        'file_type': fileType,
+        'number_of_pages': numberOfPages,
+        if (bookFile != null)
+          'book_file': await MultipartFile.fromFile(bookFile.path),
+        if (coverImage != null)
+          'cover_image': await MultipartFile.fromFile(coverImage.path),
+      });
 
-    final response = await _dio.post('/books', data: formData);
+      final response = await _dio.post('/books', data: formData);
 
-    // Handle different response types
-    if (response.data is Map<String, dynamic>) {
-      return response.data;
-    } else if (response.data is String) {
-      // Try to parse string as JSON, otherwise wrap it
-      return {'success': true, 'message': response.data};
-    } else {
-      return {'success': true, 'data': response.data};
+      // Handle different response types
+      if (response.data is Map<String, dynamic>) {
+        return response.data;
+      } else if (response.data is String) {
+        // Try to parse string as JSON, otherwise wrap it
+        return {'success': true, 'message': response.data};
+      } else {
+        return {'success': true, 'data': response.data};
+      }
+    } on DioException catch (e) {
+      // Extract error message from server response
+      String errorMessage = 'Failed to submit book';
+
+      if (e.response?.data != null) {
+        final data = e.response!.data;
+        if (data is Map<String, dynamic>) {
+          // Try to get message from response
+          errorMessage = data['message'] ?? errorMessage;
+
+          // If there are validation errors, format them
+          if (data['errors'] != null && data['errors'] is Map) {
+            final errors = data['errors'] as Map;
+            final errorList = <String>[];
+            errors.forEach((key, value) {
+              if (value is List && value.isNotEmpty) {
+                errorList.add(value.first.toString());
+              }
+            });
+            if (errorList.isNotEmpty) {
+              errorMessage = errorList.join(', ');
+            }
+          }
+        } else if (data is String) {
+          errorMessage = data;
+        }
+      } else if (e.message != null) {
+        errorMessage = e.message!;
+      }
+
+      return {'success': false, 'message': errorMessage};
     }
   }
 
