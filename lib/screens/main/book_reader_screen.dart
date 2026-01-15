@@ -82,43 +82,46 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
         }
       }
 
-      // Get download URL - first try from the book object itself
-      String? downloadUrl =
-          widget.book['book_file_url']?.toString() ??
-          widget.book['file_url']?.toString() ??
-          widget.book['book_file']?.toString() ??
-          widget.book['download_url']?.toString();
-
+      String? downloadUrl;
       String? fileType = widget.book['file_type']?.toString() ?? 'pdf';
 
       debugPrint('Book data: ${widget.book}');
-      debugPrint('Initial downloadUrl from book object: $downloadUrl');
 
-      // If not in book object, try to get from API
-      if (downloadUrl == null || downloadUrl.isEmpty) {
-        try {
-          final downloadResponse = await libraryProvider.downloadBook(bookId);
+      // ALWAYS try to get from API first to ensure we get the proxy URL
+      // This is critical because the direct URL in the book object might be external
+      // and blocked by CORS/User-Agent checks on mobile
+      try {
+        final downloadResponse = await libraryProvider.downloadBook(bookId);
 
-          debugPrint('Download API response: $downloadResponse');
+        debugPrint('Download API response: $downloadResponse');
 
-          if (downloadResponse != null) {
-            downloadUrl =
-                downloadResponse['file_url']?.toString() ??
-                downloadResponse['book_file_url']?.toString() ??
-                downloadResponse['data']?['file_url']?.toString() ??
-                downloadResponse['download_url']?.toString() ??
-                downloadResponse['data']?['book_file_url']?.toString();
+        if (downloadResponse != null) {
+          downloadUrl =
+              downloadResponse['file_url']?.toString() ??
+              downloadResponse['book_file_url']?.toString() ??
+              downloadResponse['data']?['file_url']?.toString() ??
+              downloadResponse['download_url']?.toString() ??
+              downloadResponse['data']?['book_file_url']?.toString();
 
-            fileType =
-                downloadResponse['file_type']?.toString() ??
-                downloadResponse['data']?['file_type']?.toString() ??
-                fileType;
+          fileType =
+              downloadResponse['file_type']?.toString() ??
+              downloadResponse['data']?['file_type']?.toString() ??
+              fileType;
 
-            debugPrint('Download URL from API: $downloadUrl');
-          }
-        } catch (e) {
-          debugPrint('Download API error: $e');
+          debugPrint('Download URL from API: $downloadUrl');
         }
+      } catch (e) {
+        debugPrint('Download API error: $e');
+      }
+
+      // Fallback: If API failed, try to get from book object
+      if (downloadUrl == null || downloadUrl.isEmpty) {
+        debugPrint('Falling back to book object URL');
+        downloadUrl =
+            widget.book['book_file_url']?.toString() ??
+            widget.book['file_url']?.toString() ??
+            widget.book['book_file']?.toString() ??
+            widget.book['download_url']?.toString();
       }
 
       // Check if we have a valid URL
