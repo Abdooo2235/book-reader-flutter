@@ -5,6 +5,7 @@ import 'package:book_reader_app/helpers/consts.dart';
 import 'package:book_reader_app/helpers/navigator_key.dart';
 import 'package:book_reader_app/screens/auth/login_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:http_parser/http_parser.dart';
 
 class Api {
   static final Api _instance = Api._internal();
@@ -195,7 +196,7 @@ class Api {
           'book_file': await MultipartFile.fromFile(
             bookFile.path,
             filename: bookFile.path.split('/').last.split('\\').last,
-            contentType: DioMediaType.parse(
+            contentType: MediaType.parse(
               fileType == 'pdf' ? 'application/pdf' : 'application/epub+zip',
             ),
           ),
@@ -203,7 +204,7 @@ class Api {
           'cover_image': await MultipartFile.fromFile(
             coverImage.path,
             filename: coverImage.path.split('/').last.split('\\').last,
-            contentType: DioMediaType.parse('image/jpeg'),
+            contentType: MediaType.parse('image/jpeg'),
           ),
       });
 
@@ -219,6 +220,10 @@ class Api {
         return {'success': true, 'data': response.data};
       }
     } on DioException catch (e) {
+      debugPrint('SubmitBook Error Status: ${e.response?.statusCode}');
+      debugPrint('SubmitBook Error Data: ${e.response?.data}');
+      debugPrint('SubmitBook Error Message: ${e.message}');
+
       // Extract error message from server response
       String errorMessage = 'Failed to submit book';
 
