@@ -58,7 +58,6 @@ class MyApp extends StatelessWidget {
 
   // Dark theme (warm palette matching light mode)
   ThemeData get darkTheme => ThemeData(
-    
     brightness: Brightness.dark,
     primaryColor: primaryColorDark,
     scaffoldBackgroundColor: scaffoldBackgroundColorDark,

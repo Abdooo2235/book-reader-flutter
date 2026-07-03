@@ -32,10 +32,7 @@ class _CategoryChipState extends State<CategoryChip> {
         decoration: BoxDecoration(
           color: widget.isSelected ? activePrimaryColor : Colors.transparent,
           borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-            color: activePrimaryColor,
-            width: 1.5,
-          ),
+          border: Border.all(color: activePrimaryColor, width: 1.5),
           boxShadow: [
             if (widget.isSelected)
               BoxShadow(
@@ -48,8 +45,8 @@ class _CategoryChipState extends State<CategoryChip> {
         child: Text(
           widget.label,
           style: TextStyle(
-            color: widget.isSelected 
-                ? Colors.white 
+            color: widget.isSelected
+                ? Colors.white
                 : (isDark ? whiteColorDark : blackColor),
             fontWeight: FontWeight.w500,
           ),

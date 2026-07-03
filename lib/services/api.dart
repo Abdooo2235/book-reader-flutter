@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:book_reader_app/helpers/consts.dart';
 import 'package:book_reader_app/helpers/navigator_key.dart';
+import 'package:book_reader_app/helpers/token_storage.dart';
 import 'package:book_reader_app/screens/auth/login_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -30,8 +30,7 @@ class Api {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final prefs = await SharedPreferences.getInstance();
-          final token = prefs.getString('token');
+          final token = await TokenStorage.read();
           if (token != null) {
             options.headers['Authorization'] = 'Bearer $token';
           }
@@ -56,8 +55,7 @@ class Api {
   }
 
   Future<void> _clearToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('token');
+    await TokenStorage.delete();
   }
 
   // ==================== AUTHENTICATION ====================
@@ -216,18 +214,6 @@ class Api {
 
   Future<void> deletePendingBook(int id) async {
     await _dio.delete('/my-books/$id');
-  }
-
-  // ==================== ORDERS ====================
-
-  Future<Map<String, dynamic>> getOrders() async {
-    final response = await _dio.get('/orders');
-    return response.data;
-  }
-
-  Future<Map<String, dynamic>> getOrder(int id) async {
-    final response = await _dio.get('/orders/$id');
-    return response.data;
   }
 
   // ==================== LIBRARY (DOWNLOADED BOOKS) ====================

@@ -2,7 +2,7 @@ import 'package:book_reader_app/services/api.dart';
 import 'package:flutter/material.dart';
 
 /// Base provider class that provides common functionality for all providers
-/// 
+///
 /// This class handles:
 /// - Loading state management
 /// - Error state management
@@ -26,7 +26,7 @@ abstract class BaseProvider with ChangeNotifier {
   void setBusy(bool status) {
     if (_busy != status) {
       _busy = status;
-    notifyListeners();
+      notifyListeners();
     }
   }
 
@@ -34,7 +34,7 @@ abstract class BaseProvider with ChangeNotifier {
   void setFailed(bool status) {
     if (_failed != status) {
       _failed = status;
-    notifyListeners();
+      notifyListeners();
     }
   }
 
@@ -42,7 +42,7 @@ abstract class BaseProvider with ChangeNotifier {
   void setErrorMessage(String? msg) {
     if (_errorMessage != msg) {
       _errorMessage = msg;
-    notifyListeners();
+      notifyListeners();
     }
   }
 

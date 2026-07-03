@@ -1,10 +1,10 @@
 import 'package:book_reader_app/helpers/navigator_key.dart';
+import 'package:book_reader_app/helpers/token_storage.dart';
 import 'package:book_reader_app/providers/base_provider.dart';
 import 'package:book_reader_app/screens/auth/login_screen.dart';
 import 'package:book_reader_app/services/api.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 enum AuthStatus {
   uninitialized,
@@ -21,8 +21,7 @@ class AuthProvider extends BaseProvider {
   final Api _api = Api();
 
   Future<void> initAuthProvider() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? tempToken = prefs.getString("token");
+    String? tempToken = await TokenStorage.read();
 
     if (tempToken != null) {
       status = AuthStatus.authenticated;
@@ -64,8 +63,7 @@ class AuthProvider extends BaseProvider {
         final userData = response['data']['user'];
 
         // Store token
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', newToken);
+        await TokenStorage.write(newToken);
 
         token = newToken;
         user = userData;
@@ -102,8 +100,7 @@ class AuthProvider extends BaseProvider {
         final userData = response['data']['user'];
 
         // Store token
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', newToken);
+        await TokenStorage.write(newToken);
 
         token = newToken;
         user = userData;
@@ -131,8 +128,7 @@ class AuthProvider extends BaseProvider {
     setBusy(true);
     try {
       await _api.logout();
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('token');
+      await TokenStorage.delete();
 
       token = null;
       user = null;
@@ -149,8 +145,7 @@ class AuthProvider extends BaseProvider {
       }
     } catch (e) {
       // Even if API call fails, clear local token
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('token');
+      await TokenStorage.delete();
 
       token = null;
       user = null;

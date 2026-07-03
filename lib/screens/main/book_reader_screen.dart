@@ -116,13 +116,15 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
         return;
       }
 
-      // Ensure URL is complete
+      // Ensure URL is complete. Relative storage paths are served from the
+      // backend host root, so derive the origin from the single source of
+      // truth (baseUrl in consts.dart) and drop its `/api` suffix.
       if (!downloadUrl.startsWith('http://') &&
           !downloadUrl.startsWith('https://')) {
-        const baseUrl = 'https://book-reader-store-backend.onrender.com';
+        final origin = Uri.parse(baseUrl).origin;
         downloadUrl = downloadUrl.startsWith('/')
-            ? '$baseUrl$downloadUrl'
-            : '$baseUrl/$downloadUrl';
+            ? '$origin$downloadUrl'
+            : '$origin/$downloadUrl';
       }
 
       // Download the file with progress indicator
@@ -224,7 +226,7 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
       _totalPages = _pdfController?.pageCount ?? 0;
     });
     _saveProgress();
-    
+
     // Show controls when reaching last page to display Done button
     if (_currentPage >= _totalPages && _totalPages > 0) {
       setState(() {
@@ -469,7 +471,9 @@ class _BookReaderScreenState extends State<BookReaderScreen> {
                           width: double.infinity,
                           margin: const EdgeInsets.only(bottom: 16),
                           child: ElevatedButton.icon(
-                            onPressed: _isMarkingAsRead ? null : _markAsReadAndClose,
+                            onPressed: _isMarkingAsRead
+                                ? null
+                                : _markAsReadAndClose,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: greenColor,
                               foregroundColor: Colors.white,

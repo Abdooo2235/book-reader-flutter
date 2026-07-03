@@ -42,10 +42,7 @@ class BookCard extends StatelessWidget {
                   color: coverColor,
                   borderRadius: BorderRadius.circular(12),
                   border: isSelected
-                      ? Border.all(
-                          color: primaryColor,
-                          width: 3,
-                        )
+                      ? Border.all(color: primaryColor, width: 3)
                       : null,
                   boxShadow: [
                     BoxShadow(
