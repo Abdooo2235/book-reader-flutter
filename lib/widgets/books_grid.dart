@@ -99,7 +99,8 @@ class BooksGrid extends StatelessWidget {
         final bookIdInt = bookId is int
             ? bookId
             : int.tryParse(bookId?.toString() ?? '');
-        final isSelected = bookIdInt != null && selectedBookIds.contains(bookIdInt);
+        final isSelected =
+            bookIdInt != null && selectedBookIds.contains(bookIdInt);
 
         // Get progress from progressMap if available (for reading tab)
         if (progressMap != null && bookIdInt != null) {
@@ -131,7 +132,8 @@ class BooksGrid extends StatelessWidget {
                 coverColor: coverColor,
                 coverUrl: coverUrl,
                 isSelected: isSelected,
-                showProgressCircle: progressMap != null, // Show circle only in reading tab
+                showProgressCircle:
+                    progressMap != null, // Show circle only in reading tab
               ),
               if (isSelectionMode)
                 Positioned(
@@ -146,9 +148,7 @@ class BooksGrid extends StatelessWidget {
                           : Colors.white.withValues(alpha: 0.95),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isSelected
-                            ? primaryColor
-                            : Colors.grey.shade400,
+                        color: isSelected ? primaryColor : Colors.grey.shade400,
                         width: isSelected ? 0 : 2,
                       ),
                       boxShadow: [
@@ -160,11 +160,7 @@ class BooksGrid extends StatelessWidget {
                       ],
                     ),
                     child: isSelected
-                        ? Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: 18,
-                          )
+                        ? Icon(Icons.check, color: Colors.white, size: 18)
                         : Icon(
                             Icons.circle_outlined,
                             color: Colors.grey.shade600,

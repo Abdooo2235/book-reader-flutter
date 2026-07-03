@@ -8,18 +8,16 @@ class BookCardShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     // Shimmer colors based on theme
-    final baseColor = isDark 
+    final baseColor = isDark
         ? primaryColorDark.withValues(alpha: 0.3)
         : Colors.grey[300]!;
-    final highlightColor = isDark 
+    final highlightColor = isDark
         ? primaryColorDark.withValues(alpha: 0.6)
         : Colors.grey[100]!;
-    final containerColor = isDark 
-        ? surfaceColorDark 
-        : Colors.white;
-    final shadowColor = isDark 
+    final containerColor = isDark ? surfaceColorDark : Colors.white;
+    final shadowColor = isDark
         ? Colors.black.withValues(alpha: 0.4)
         : Colors.black.withAlpha(25);
 
@@ -79,4 +77,3 @@ class BookCardShimmer extends StatelessWidget {
     );
   }
 }
-

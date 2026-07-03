@@ -19,22 +19,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     OnboardingPage(
       image: 'assets/images/Bibliophile-amico.svg',
       title: 'Discover Your Next Read',
-      description: 'Explore thousands of books across various categories and find your perfect match.',
+      description:
+          'Explore thousands of books across various categories and find your perfect match.',
     ),
     OnboardingPage(
       image: 'assets/images/Bibliophile-bro.svg',
       title: 'Read Anytime, Anywhere',
-      description: 'Access your favorite books on any device and continue reading from where you left off.',
+      description:
+          'Access your favorite books on any device and continue reading from where you left off.',
     ),
     OnboardingPage(
       image: 'assets/images/Bibliophile-cuate.svg',
       title: 'Build Your Library',
-      description: 'Create your personal collection, organize books, and track your reading progress.',
+      description:
+          'Create your personal collection, organize books, and track your reading progress.',
     ),
     OnboardingPage(
       image: 'assets/images/Bibliophile-rafiki.svg',
       title: 'Share Your Passion',
-      description: 'Submit your own books, share reviews, and connect with fellow book lovers.',
+      description:
+          'Submit your own books, share reviews, and connect with fellow book lovers.',
     ),
   ];
 
@@ -53,12 +57,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _completeOnboarding() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('onboarding_completed', true);
-    
+
     if (mounted) {
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => const LoginScreen(),
-        ),
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     }
   }
@@ -133,9 +135,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                       _pages.length,
-                      (index) => _PageIndicator(
-                        isActive: index == _currentPage,
-                      ),
+                      (index) =>
+                          _PageIndicator(isActive: index == _currentPage),
                     ),
                   ),
                   const SizedBox(height: spacingLarge),
@@ -152,7 +153,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           vertical: spacingMedium,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(borderRadiusMedium),
+                          borderRadius: BorderRadius.circular(
+                            borderRadiusMedium,
+                          ),
                         ),
                         elevation: 0,
                       ),
@@ -178,10 +181,7 @@ class _OnboardingPageWidget extends StatelessWidget {
   final OnboardingPage page;
   final int pageIndex;
 
-  const _OnboardingPageWidget({
-    required this.page,
-    required this.pageIndex,
-  });
+  const _OnboardingPageWidget({required this.page, required this.pageIndex});
 
   @override
   Widget build(BuildContext context) {
@@ -195,10 +195,7 @@ class _OnboardingPageWidget extends StatelessWidget {
             flex: 3,
             child: Container(
               padding: const EdgeInsets.all(spacingLarge),
-              child: SvgPicture.asset(
-                page.image,
-                fit: BoxFit.contain,
-              ),
+              child: SvgPicture.asset(page.image, fit: BoxFit.contain),
             ),
           ),
 
@@ -219,10 +216,7 @@ class _OnboardingPageWidget extends StatelessWidget {
           // Description
           Text(
             page.description,
-            style: bodyLarge.copyWith(
-              color: Colors.grey[700],
-              height: 1.5,
-            ),
+            style: bodyLarge.copyWith(color: Colors.grey[700], height: 1.5),
             textAlign: TextAlign.center,
           ),
         ],
@@ -262,4 +256,3 @@ class OnboardingPage {
     required this.description,
   });
 }
-
