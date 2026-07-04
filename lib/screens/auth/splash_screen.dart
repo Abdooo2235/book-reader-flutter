@@ -3,6 +3,7 @@ import 'package:book_reader_app/providers/auth_provider.dart';
 import 'package:book_reader_app/screens/auth/login_screen.dart';
 import 'package:book_reader_app/screens/auth/onboarding_screen.dart';
 import 'package:book_reader_app/screens/main/tabs_screen.dart';
+import 'package:book_reader_app/theme/app_colors.dart';
 import 'package:book_reader_app/widgets/app_logo.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -30,11 +31,11 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+      CurvedAnimation(parent: _animationController, curve: easeOutStrong),
     );
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+      CurvedAnimation(parent: _animationController, curve: easeOutStrong),
     );
 
     _animationController.forward();
@@ -83,8 +84,9 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Scaffold(
-      backgroundColor: scaffoldBackgroundColor,
+      backgroundColor: colors.background,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -109,17 +111,17 @@ class _SplashScreenState extends State<SplashScreen>
                 );
               },
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: spacingLarge),
             FadeTransition(
               opacity: _fadeAnimation,
               child: Text(
                 'Book Reader',
-                style: displayLarge.copyWith(color: primaryColor),
+                style: displayLarge.copyWith(color: colors.primary),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: spacingMedium),
             CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+              valueColor: AlwaysStoppedAnimation<Color>(colors.primary),
             ),
           ],
         ),

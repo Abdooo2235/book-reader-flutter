@@ -1,4 +1,5 @@
 import 'package:book_reader_app/helpers/consts.dart';
+import 'package:book_reader_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class DownloadProgressDialog extends StatelessWidget {
@@ -15,21 +16,19 @@ class DownloadProgressDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? surfaceColorDark : whiteColor;
-    final textColor = isDark ? whiteColorDark : blackColor;
-    final secondaryTextColor = isDark
-        ? whiteColorDark.withValues(alpha: 0.7)
-        : Colors.grey[600];
+    final colors = AppColors.of(context);
+    final backgroundColor = colors.surface;
+    final textColor = colors.onSurface;
+    final mutedTextColor = colors.secondaryText;
     final percentage = (progress * 100).toInt();
 
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(spacingLarge),
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(borderRadiusXLarge),
           boxShadow: [
             BoxShadow(
               color: primaryColor.withValues(alpha: 0.2),
@@ -105,7 +104,7 @@ class DownloadProgressDialog extends StatelessWidget {
             // Book name
             Text(
               bookTitle,
-              style: bodyMedium.copyWith(color: secondaryTextColor),
+              style: bodyMedium.copyWith(color: mutedTextColor),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -114,7 +113,7 @@ class DownloadProgressDialog extends StatelessWidget {
 
             // Progress bar
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(borderRadiusSmall),
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 8,
@@ -131,7 +130,7 @@ class DownloadProgressDialog extends StatelessWidget {
                 child: Text(
                   'Cancel',
                   style: bodyMedium.copyWith(
-                    color: redColor,
+                    color: colors.danger,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

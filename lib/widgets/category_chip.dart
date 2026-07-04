@@ -1,5 +1,6 @@
+import 'package:book_reader_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
-import '../helpers/consts.dart'; // your colors
+import '../helpers/consts.dart'; // spacing / radius / text tokens
 
 class CategoryChip extends StatefulWidget {
   final String label;
@@ -20,23 +21,26 @@ class CategoryChip extends StatefulWidget {
 class _CategoryChipState extends State<CategoryChip> {
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final activePrimaryColor = isDark ? primaryColorDark : primaryColor;
+    final colors = AppColors.of(context);
 
     return GestureDetector(
       onTap: widget.onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        duration: animationDurationShort,
+        curve: easeOutStrong,
+        padding: const EdgeInsets.symmetric(
+          horizontal: spacingMedium,
+          vertical: spacingSmall,
+        ),
         margin: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
-          color: widget.isSelected ? activePrimaryColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: activePrimaryColor, width: 1.5),
+          color: widget.isSelected ? colors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(30), // pill
+          border: Border.all(color: colors.primary, width: 1.5),
           boxShadow: [
             if (widget.isSelected)
               BoxShadow(
-                color: activePrimaryColor.withValues(alpha: 0.3),
+                color: colors.primary.withValues(alpha: 0.3),
                 blurRadius: 5,
                 offset: const Offset(0, 3),
               ),
@@ -44,11 +48,8 @@ class _CategoryChipState extends State<CategoryChip> {
         ),
         child: Text(
           widget.label,
-          style: TextStyle(
-            color: widget.isSelected
-                ? Colors.white
-                : (isDark ? whiteColorDark : blackColor),
-            fontWeight: FontWeight.w500,
+          style: labelSmall.copyWith(
+            color: widget.isSelected ? colors.onPrimary : colors.onSurface,
           ),
         ),
       ),

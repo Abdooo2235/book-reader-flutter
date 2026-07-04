@@ -2,10 +2,12 @@ import 'package:book_reader_app/helpers/consts.dart';
 import 'package:book_reader_app/providers/book_provider.dart';
 import 'package:book_reader_app/providers/category_provider.dart';
 import 'package:book_reader_app/screens/main/book_details_screen.dart';
-import 'package:book_reader_app/widgets/app_logo.dart';
-import 'package:book_reader_app/widgets/book_card_shimmer.dart';
+import 'package:book_reader_app/theme/app_colors.dart';
 import 'package:book_reader_app/widgets/books_grid.dart';
 import 'package:book_reader_app/widgets/category_chip.dart';
+import 'package:book_reader_app/widgets/common/app_header.dart';
+import 'package:book_reader_app/widgets/common/empty_state.dart';
+import 'package:book_reader_app/widgets/common/skeletons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -34,91 +36,64 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? whiteColorDark : blackColor;
-    final searchFieldColor = isDark ? surfaceColorDark : Colors.white;
+    final colors = AppColors.of(context);
 
     return Consumer2<BookProvider, CategoryProvider>(
       builder: (context, bookProvider, categoryProvider, child) {
         return Column(
           children: [
             // Header with Search
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 1),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Home text on the left
-                      Text(
-                        'Home',
-                        style: bodySmall.copyWith(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 24,
-                          color: textColor,
-                        ),
-                      ),
-                      // Logo centered
-                      Expanded(
-                        child: Center(
-                          child:
-                              //contol app logo size
-                              AppLogo.large(size: 150),
-                        ),
-                      ),
-                      // Search icon on the right
-                      IconButton(
-                        icon: Icon(
-                          bookProvider.isSearching ? Icons.close : Icons.search,
-                          color: textColor,
-                        ),
-                        onPressed: () => bookProvider.toggleSearch(),
-                      ),
-                    ],
-                  ),
-                  if (bookProvider.isSearching)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8, bottom: 8),
-                      child: TextField(
-                        autofocus: true,
-                        onChanged: (value) =>
-                            bookProvider.setSearchQuery(value),
-                        style: TextStyle(color: textColor),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: searchFieldColor,
-                          prefixIcon: Icon(
-                            Icons.search,
-                            color: textColor.withValues(alpha: 0.7),
-                          ),
-                          suffixIcon: bookProvider.searchQuery.isNotEmpty
-                              ? IconButton(
-                                  icon: Icon(
-                                    Icons.backspace,
-                                    color: textColor.withValues(alpha: 0.5),
-                                  ),
-                                  onPressed: () => bookProvider.clearSearch(),
-                                )
-                              : null,
-                          hintText: "Search",
-                          hintStyle: TextStyle(
-                            color: textColor.withValues(alpha: 0.5),
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
+            AppHeader(
+              title: 'Home',
+              trailing: IconButton(
+                icon: Icon(
+                  bookProvider.isSearching ? Icons.close : Icons.search,
+                  color: colors.onSurface,
+                ),
+                onPressed: () => bookProvider.toggleSearch(),
               ),
             ),
+            if (bookProvider.isSearching)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  spacingLarge,
+                  0,
+                  spacingLarge,
+                  spacingSmall,
+                ),
+                child: TextField(
+                  autofocus: true,
+                  onChanged: (value) => bookProvider.setSearchQuery(value),
+                  style: bodyMedium.copyWith(color: colors.onSurface),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: colors.surface,
+                    prefixIcon: Icon(Icons.search, color: colors.secondaryText),
+                    suffixIcon: bookProvider.searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(
+                              Icons.backspace,
+                              color: colors.secondaryText,
+                            ),
+                            onPressed: () => bookProvider.clearSearch(),
+                          )
+                        : null,
+                    hintText: "Search",
+                    hintStyle: bodyMedium.copyWith(color: colors.secondaryText),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
             // Category Chips Row
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+              padding: const EdgeInsets.symmetric(
+                vertical: 4,
+                horizontal: spacingSmall,
+              ),
               child: Row(
                 children: List.generate(
                   categoryProvider.categories.length,
@@ -157,22 +132,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     categoryProvider.loadCategories(),
                   ]);
                 },
-                color: isDark ? primaryColorDark : primaryColor,
+                color: colors.primary,
                 child: bookProvider.busy && bookProvider.books.isEmpty
-                    ? GridView.builder(
-                        padding: const EdgeInsets.all(12),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                              childAspectRatio: 0.52,
-                              crossAxisSpacing: 12,
-                              mainAxisSpacing: 12,
-                            ),
-                        itemCount: 9, // Show 9 shimmer placeholders
-                        itemBuilder: (context, index) {
-                          return const BookCardShimmer();
-                        },
-                      )
+                    ? const BooksGridSkeleton()
                     : _buildBooksContent(context, bookProvider),
               ),
             ),
@@ -183,86 +145,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildBooksContent(BuildContext context, BookProvider bookProvider) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final secondaryTextColor = isDark
-        ? whiteColorDark.withValues(alpha: 0.7)
-        : Colors.grey[700];
-    final tertiaryTextColor = isDark
-        ? whiteColorDark.withValues(alpha: 0.5)
-        : Colors.grey[500];
-    final accentColor = isDark ? primaryColorDark : primaryColor;
-
     final displayBooks = bookProvider.filteredBooks;
 
     if (displayBooks.isEmpty && bookProvider.searchQuery.isNotEmpty) {
-      return ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        children: [
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.5,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.search_off,
-                    size: 64,
-                    color: accentColor.withValues(alpha: 0.5),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No books found',
-                    style: bodyLarge.copyWith(
-                      color: secondaryTextColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Try a different search term',
-                    style: bodyMedium.copyWith(color: tertiaryTextColor),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+      return const EmptyState(
+        icon: Icons.search_off,
+        title: 'No books found',
+        message: 'Try a different search term',
       );
     }
 
     if (displayBooks.isEmpty) {
-      return ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        children: [
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.5,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.book_outlined,
-                    size: 64,
-                    color: accentColor.withValues(alpha: 0.5),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'No books available',
-                    style: bodyLarge.copyWith(
-                      color: secondaryTextColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Pull down to refresh',
-                    style: bodyMedium.copyWith(color: tertiaryTextColor),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+      return const EmptyState(
+        icon: Icons.book_outlined,
+        title: 'No books available',
+        message: 'Pull down to refresh',
       );
     }
 

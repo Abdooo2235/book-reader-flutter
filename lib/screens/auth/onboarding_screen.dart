@@ -1,6 +1,9 @@
 import 'package:book_reader_app/helpers/consts.dart';
 import 'package:book_reader_app/screens/auth/login_screen.dart';
+import 'package:book_reader_app/theme/app_colors.dart';
+import 'package:book_reader_app/widgets/common/app_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -82,8 +85,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final isLastPage = _currentPage == _pages.length - 1;
     return Scaffold(
-      backgroundColor: scaffoldBackgroundColor,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -101,7 +106,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Text(
                       'Skip',
                       style: bodyMedium.copyWith(
-                        color: primaryColor,
+                        color: colors.primary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -142,30 +147,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   const SizedBox(height: spacingLarge),
 
                   // Next/Get Started button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _nextPage,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: spacingMedium,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            borderRadiusMedium,
-                          ),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Text(
-                        _currentPage == _pages.length - 1
-                            ? 'Get Started'
-                            : 'Next',
-                        style: labelMedium.copyWith(color: Colors.white),
-                      ),
-                    ),
+                  PrimaryButton(
+                    label: isLastPage ? 'Get Started' : 'Next',
+                    onPressed: _nextPage,
+                    icon: isLastPage
+                        ? Icons.arrow_forward_rounded
+                        : Icons.chevron_right_rounded,
                   ),
                 ],
               ),
@@ -185,6 +172,23 @@ class _OnboardingPageWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+
+    Widget illustration = SvgPicture.asset(page.image, fit: BoxFit.contain);
+    illustration = reduceMotion
+        ? illustration.animate().fadeIn(duration: animationDurationMedium)
+        : illustration
+              .animate()
+              .fadeIn(duration: animationDurationMedium)
+              .scale(
+                begin: const Offset(0.92, 0.92),
+                end: const Offset(1, 1),
+                duration: animationDurationMedium,
+                curve: easeOutStrong,
+              );
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: spacingLarge),
       child: Column(
@@ -195,7 +199,7 @@ class _OnboardingPageWidget extends StatelessWidget {
             flex: 3,
             child: Container(
               padding: const EdgeInsets.all(spacingLarge),
-              child: SvgPicture.asset(page.image, fit: BoxFit.contain),
+              child: illustration,
             ),
           ),
 
@@ -205,7 +209,7 @@ class _OnboardingPageWidget extends StatelessWidget {
           Text(
             page.title,
             style: displayLarge.copyWith(
-              color: blackColor,
+              color: colors.onSurface,
               fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
@@ -216,7 +220,7 @@ class _OnboardingPageWidget extends StatelessWidget {
           // Description
           Text(
             page.description,
-            style: bodyLarge.copyWith(color: Colors.grey[700], height: 1.5),
+            style: bodyLarge.copyWith(color: colors.secondaryText),
             textAlign: TextAlign.center,
           ),
         ],
@@ -232,14 +236,16 @@ class _PageIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return AnimatedContainer(
       duration: animationDurationMedium,
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      height: 8,
-      width: isActive ? 24 : 8,
+      curve: easeOutStrong,
+      margin: const EdgeInsets.symmetric(horizontal: spacingSmall / 2),
+      height: spacingSmall,
+      width: isActive ? spacingLarge : spacingSmall,
       decoration: BoxDecoration(
-        color: isActive ? primaryColor : Colors.grey[300],
-        borderRadius: BorderRadius.circular(4),
+        color: isActive ? colors.primary : colors.border,
+        borderRadius: BorderRadius.circular(borderRadiusSmall / 2),
       ),
     );
   }

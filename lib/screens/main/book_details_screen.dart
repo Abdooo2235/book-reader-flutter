@@ -1,11 +1,16 @@
 import 'package:book_reader_app/helpers/consts.dart';
+import 'package:book_reader_app/helpers/cover_utils.dart';
+import 'package:book_reader_app/helpers/ui_utils.dart';
 import 'package:book_reader_app/providers/book_provider.dart';
 import 'package:book_reader_app/providers/library_provider.dart';
 import 'package:book_reader_app/screens/main/book_reader_screen.dart';
+import 'package:book_reader_app/theme/app_colors.dart';
+import 'package:book_reader_app/widgets/common/app_button.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class BookDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> book;
@@ -21,47 +26,9 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark
-        ? scaffoldBackgroundColorDark
-        : scaffoldBackgroundColor;
-    final textColor = isDark ? whiteColorDark : blackColor;
-    final secondaryTextColor = isDark
-        ? whiteColorDark.withValues(alpha: 0.6)
-        : Colors.grey[600];
-    final accentColor = isDark ? primaryColorDark : primaryColor;
-    final iconColor = isDark ? whiteColorDark : Colors.black87;
-
-    // Generate color from title if not present
-    Color coverColor = accentColor;
-    if (widget.book['color'] != null && widget.book['color'] is Color) {
-      coverColor = widget.book['color'];
-    } else if (widget.book['cover_color'] != null &&
-        widget.book['cover_color'] is Color) {
-      coverColor = widget.book['cover_color'];
-    } else {
-      // Generate color from title
-      final title = widget.book['title']?.toString() ?? '';
-      if (title.isNotEmpty) {
-        int hash = 0;
-        for (int i = 0; i < title.length; i++) {
-          hash = title.codeUnitAt(i) + ((hash << 5) - hash);
-        }
-        final colors = [
-          const Color(0xff7A4A2E),
-          const Color(0xffB5533C),
-          const Color(0xff6B8E4E),
-          const Color(0xff4A7C8E),
-          const Color(0xff8B6F47),
-        ];
-        coverColor = colors[hash.abs() % colors.length];
-      }
-    }
-
-    // Extract cover URL
-    String? coverUrl = widget.book['cover_url']?.toString();
-    coverUrl ??= widget.book['cover_image']?.toString();
-    coverUrl ??= widget.book['cover_thumb_url']?.toString();
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
 
     final title = widget.book['title']?.toString() ?? 'Untitled';
     final author = widget.book['author']?.toString() ?? 'Unknown Author';
@@ -77,195 +44,181 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
         widget.book['description']?.toString() ??
         'No description available for this book.';
 
+    final coverColor = CoverUtils.colorFor(title);
+    final coverUrl = CoverUtils.resolveUrl(widget.book);
+    final heroTag = 'book-cover-${widget.book['id']}';
+
     return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        backgroundColor: backgroundColor,
-        elevation: 0,
-        systemOverlayStyle: SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-          statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
-        ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: iconColor),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          // Favorites icon
-          Consumer<BookProvider>(
-            builder: (context, bookProvider, child) {
-              final isFav = bookProvider.isFavorite(widget.book);
-              return IconButton(
-                icon: Icon(
-                  isFav ? Icons.favorite : Icons.favorite_border,
-                  color: isFav
-                      ? (isDark ? redColorDark : Colors.red)
-                      : iconColor,
-                ),
-                onPressed: () async {
-                  final messenger = ScaffoldMessenger.of(context);
-                  try {
-                    await bookProvider.toggleFavorite(widget.book);
-                  } catch (e) {
-                    if (mounted) {
-                      messenger.showSnackBar(
-                        SnackBar(
-                          content: Text(
+      backgroundColor: colors.background,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 380,
+            pinned: true,
+            stretch: true,
+            backgroundColor: colors.background,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            systemOverlayStyle: SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: isDark
+                  ? Brightness.light
+                  : Brightness.dark,
+              statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+            ),
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios, color: colors.onSurface),
+              onPressed: () => Navigator.pop(context),
+            ),
+            actions: [
+              Consumer<BookProvider>(
+                builder: (context, bookProvider, child) {
+                  final isFav = bookProvider.isFavorite(widget.book);
+                  return IconButton(
+                    icon: Icon(
+                      isFav ? Icons.favorite : Icons.favorite_border,
+                      color: isFav ? colors.danger : colors.onSurface,
+                    ),
+                    onPressed: () async {
+                      try {
+                        await bookProvider.toggleFavorite(widget.book);
+                      } catch (e) {
+                        if (context.mounted) {
+                          UiUtils.showErrorSnackBar(
+                            context,
                             'Failed to update favorite: ${e.toString()}',
-                            style: bodyMedium.copyWith(color: Colors.white),
-                          ),
-                          backgroundColor: redColor,
-                        ),
-                      );
-                    }
-                  }
+                          );
+                        }
+                      }
+                    },
+                  );
                 },
-              );
-            },
+              ),
+            ],
+            flexibleSpace: FlexibleSpaceBar(
+              collapseMode: CollapseMode.parallax,
+              background: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: spacingLarge),
+                  child: Center(
+                    child: Hero(
+                      tag: heroTag,
+                      child: _CoverArtwork(
+                        coverColor: coverColor,
+                        coverUrl: coverUrl,
+                        shadowColor: colors.shadow,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(spacingLarge),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _stagger(
+                    reduceMotion,
+                    0,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: displayMedium.copyWith(
+                            color: colors.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: spacingSmall),
+                        Text(
+                          author,
+                          style: bodyMedium.copyWith(
+                            color: colors.secondaryText,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: spacingLarge),
+                  _stagger(
+                    reduceMotion,
+                    1,
+                    Row(
+                      children: [
+                        _buildBadge(context, Icons.menu_book, '$pages pages'),
+                        const SizedBox(width: spacingMedium),
+                        _buildBadge(
+                          context,
+                          Icons.description,
+                          format.toUpperCase(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: spacingXLarge),
+                  _stagger(
+                    reduceMotion,
+                    2,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Description',
+                          style: labelLarge.copyWith(color: colors.onSurface),
+                        ),
+                        const SizedBox(height: spacingMedium),
+                        Text(
+                          description,
+                          style: bodyMedium.copyWith(
+                            color: colors.secondaryText,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: spacingXLarge),
+                  _stagger(
+                    reduceMotion,
+                    3,
+                    PrimaryButton(
+                      label: 'Download & Read',
+                      icon: Icons.download,
+                      busy: _isDownloading,
+                      onPressed: _downloadAndRead,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Centered Book Cover with Image
-            Center(
-              child: Container(
-                width: 160,
-                height: 240,
-                decoration: BoxDecoration(
-                  color: coverColor,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.2),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: coverUrl != null && coverUrl.isNotEmpty
-                    ? Image.network(
-                        coverUrl,
-                        fit: BoxFit.cover,
-                        width: 160,
-                        height: 240,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                  : null,
-                              strokeWidth: 2,
-                              color: Colors.white.withValues(alpha: 0.7),
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(
-                            child: Icon(
-                              Icons.book,
-                              size: 64,
-                              color: Colors.white.withValues(alpha: 0.5),
-                            ),
-                          );
-                        },
-                      )
-                    : Center(
-                        child: Icon(
-                          Icons.book,
-                          size: 64,
-                          color: Colors.white.withValues(alpha: 0.5),
-                        ),
-                      ),
-              ),
-            ),
-            const SizedBox(height: 32),
+    );
+  }
 
-            // Title and Author
-            Text(
-              title,
-              style: displayMedium.copyWith(fontSize: 24, color: textColor),
-            ),
-            const SizedBox(height: 8),
-            Text(author, style: bodyMedium.copyWith(color: secondaryTextColor)),
-            const SizedBox(height: 24),
-
-            // Metadata Badges (Pages, Format)
-            Row(
-              children: [
-                _buildBadge(context, Icons.menu_book, '$pages pages'),
-                const SizedBox(width: 12),
-                _buildBadge(context, Icons.description, format.toUpperCase()),
-              ],
-            ),
-            const SizedBox(height: 32),
-
-            // Description
-            Text('Description', style: labelLarge.copyWith(color: textColor)),
-            const SizedBox(height: 12),
-            Text(
-              description,
-              style: bodyMedium.copyWith(
-                color: secondaryTextColor,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // Action Buttons
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: _isDownloading ? null : _downloadAndRead,
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  side: BorderSide(color: accentColor),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: _isDownloading
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: accentColor,
-                        ),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.download, color: accentColor),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Download & Read',
-                            style: bodyMedium.copyWith(
-                              color: accentColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
-            ),
-          ],
-        ),
-      ),
+  /// Fades a section in (always) and slides it up (only when motion is allowed),
+  /// staggered by [index] so sections cascade into place.
+  Widget _stagger(bool reduceMotion, int index, Widget child) {
+    final animated = child
+        .animate(delay: staggerStep * index)
+        .fadeIn(duration: animationDurationShort, curve: easeOutStrong);
+    if (reduceMotion) return animated;
+    return animated.slideY(
+      begin: 0.12,
+      end: 0,
+      duration: animationDurationShort,
+      curve: easeOutStrong,
     );
   }
 
   Future<void> _downloadAndRead() async {
     final bookId = widget.book['id'];
     if (bookId == null) {
-      _showSnackBar('Unable to download book', isError: true);
+      UiUtils.showErrorSnackBar(context, 'Unable to download book');
       return;
     }
 
@@ -290,9 +243,9 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _showSnackBar(
+        UiUtils.showErrorSnackBar(
+          context,
           'Failed to start reading: ${e.toString()}',
-          isError: true,
         );
       }
     } finally {
@@ -302,58 +255,95 @@ class _BookDetailsScreenState extends State<BookDetailsScreen> {
     }
   }
 
-  void _showSnackBar(String message, {bool isError = false}) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(
-              isError ? Icons.error_outline : Icons.check_circle,
-              color: Colors.white,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                message,
-                style: bodyMedium.copyWith(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: isError
-            ? (isDark ? redColorDark : redColor)
-            : (isDark ? greenColorDark : greenColor),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-      ),
-    );
-  }
-
   Widget _buildBadge(BuildContext context, IconData icon, String text) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final badgeBackground = isDark ? surfaceColorDark : const Color(0xffF5EFE6);
-    final textColor = isDark ? whiteColorDark : Colors.black87;
-    final accentColor = isDark ? primaryColorDark : primaryColor;
-    final borderColor = isDark
-        ? whiteColorDark.withValues(alpha: 0.1)
-        : Colors.grey.withValues(alpha: 0.3);
+    final colors = AppColors.of(context);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+        horizontal: spacingMedium,
+        vertical: spacingSmall,
+      ),
       decoration: BoxDecoration(
-        color: badgeBackground,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: borderColor),
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(borderRadiusXLarge),
+        border: Border.all(color: colors.border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 16, color: accentColor),
-          const SizedBox(width: 6),
-          Text(text, style: labelSmall.copyWith(color: textColor)),
+          Icon(icon, size: 16, color: colors.primary),
+          const SizedBox(width: spacingSmall - 2),
+          Text(text, style: labelSmall.copyWith(color: colors.onSurface)),
         ],
+      ),
+    );
+  }
+}
+
+/// The centered book cover shown in the collapsing header. Renders the network
+/// cover when available, otherwise a deterministic colored placeholder.
+class _CoverArtwork extends StatelessWidget {
+  const _CoverArtwork({
+    required this.coverColor,
+    required this.coverUrl,
+    required this.shadowColor,
+  });
+
+  final Color coverColor;
+  final String? coverUrl;
+  final Color shadowColor;
+
+  @override
+  Widget build(BuildContext context) {
+    const width = 170.0;
+    const height = 250.0;
+
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: coverColor,
+        borderRadius: BorderRadius.circular(borderRadiusMedium),
+        boxShadow: [
+          BoxShadow(
+            color: shadowColor,
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: coverUrl != null && coverUrl!.isNotEmpty
+          ? Image.network(
+              coverUrl!,
+              fit: BoxFit.cover,
+              width: width,
+              height: height,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                        : null,
+                    strokeWidth: 2,
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) => _placeholder(),
+            )
+          : _placeholder(),
+    );
+  }
+
+  Widget _placeholder() {
+    return Center(
+      child: Icon(
+        Icons.book,
+        size: 64,
+        color: Colors.white.withValues(alpha: 0.5),
       ),
     );
   }

@@ -1,7 +1,12 @@
 import 'package:book_reader_app/helpers/consts.dart';
+import 'package:book_reader_app/helpers/ui_utils.dart';
 import 'package:book_reader_app/providers/auth_provider.dart';
 import 'package:book_reader_app/providers/preferences_provider.dart';
+import 'package:book_reader_app/theme/app_colors.dart';
+import 'package:book_reader_app/widgets/common/app_button.dart';
+import 'package:book_reader_app/widgets/common/app_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -36,15 +41,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? surfaceColorDark : whiteColor;
-    final textColor = isDark ? whiteColorDark : blackColor;
-    final secondaryTextColor = isDark
-        ? whiteColorDark.withValues(alpha: 0.6)
-        : Colors.grey[600];
-    final accentColor = isDark ? primaryColorDark : primaryColor;
-    final errorColor = isDark ? redColorDark : redColor;
-    final successColor = isDark ? greenColorDark : greenColor;
+    final colors = AppColors.of(context);
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
 
     return Consumer2<AuthProvider, PreferencesProvider>(
       builder: (context, authProvider, preferencesProvider, _) {
@@ -58,8 +56,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               children: [
                 // Header with Profile Picture
-                Container(
-                  padding: const EdgeInsets.only(top: 40, bottom: 30),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: spacingXLarge + spacingSmall,
+                    bottom: spacingLarge + spacingSmall,
+                  ),
                   child: Column(
                     children: [
                       Stack(
@@ -69,10 +70,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             height: 120,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(color: accentColor, width: 3),
+                              border: Border.all(
+                                color: colors.primary,
+                                width: 3,
+                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: accentColor.withValues(alpha: 0.2),
+                                  color: colors.primary.withValues(alpha: 0.2),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),
@@ -80,13 +84,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             child: CircleAvatar(
                               radius: 57,
-                              backgroundColor: accentColor.withValues(
+                              backgroundColor: colors.primary.withValues(
                                 alpha: 0.1,
                               ),
                               child: Icon(
                                 Icons.person,
                                 size: 60,
-                                color: accentColor,
+                                color: colors.primary,
                               ),
                             ),
                           ),
@@ -97,28 +101,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               width: 36,
                               height: 36,
                               decoration: BoxDecoration(
-                                color: accentColor,
+                                color: colors.primary,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: cardColor, width: 2),
+                                border: Border.all(
+                                  color: colors.surface,
+                                  width: 2,
+                                ),
                               ),
                               child: IconButton(
                                 padding: EdgeInsets.zero,
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.camera_alt,
                                   size: 18,
-                                  color: Colors.white,
+                                  color: colors.onPrimary,
                                 ),
                                 onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Profile picture upload coming soon',
-                                        style: bodyMedium.copyWith(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      backgroundColor: accentColor,
-                                    ),
+                                  UiUtils.showInfoSnackBar(
+                                    context,
+                                    'Profile picture upload coming soon',
                                   );
                                 },
                               ),
@@ -126,219 +126,106 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: spacingMedium),
                       Text(
                         userName,
-                        style: labelLarge.copyWith(color: textColor),
+                        style: labelLarge.copyWith(color: colors.onSurface),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: spacingSmall / 2),
                       Text(
                         userEmail,
-                        style: bodyMedium.copyWith(color: secondaryTextColor),
+                        style: bodyMedium.copyWith(color: colors.secondaryText),
                       ),
                     ],
                   ),
                 ),
 
-                Divider(
-                  color: accentColor.withValues(alpha: 0.2),
-                  thickness: 0.5,
-                ),
+                Divider(color: colors.border, thickness: 0.5),
 
                 // Profile Options
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
+                    horizontal: spacingMedium,
+                    vertical: spacingSmall,
                   ),
                   child: Column(
                     children: [
-                      // Change Name
-                      _buildProfileOption(
-                        context: context,
-                        icon: Icons.person_outline,
-                        title: 'Change Name',
-                        subtitle: userName,
-                        onTap: () {
-                          _showChangeNameDialog();
-                        },
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Change Password
-                      _buildProfileOption(
-                        context: context,
-                        icon: Icons.lock_outline,
-                        title: 'Change Password',
-                        subtitle: 'Update your password',
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Change password feature coming soon',
-                                style: bodyMedium.copyWith(color: Colors.white),
-                              ),
-                              backgroundColor: accentColor,
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 12),
-
-                      // Light/Dark Mode
-                      Container(
-                        decoration: BoxDecoration(
-                          color: cardColor,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: accentColor.withValues(alpha: 0.2),
-                            width: 1,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: accentColor.withValues(alpha: 0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                      _staggerOption(
+                        reduceMotion,
+                        0,
+                        _buildProfileOption(
+                          context: context,
+                          icon: Icons.person_outline,
+                          title: 'Change Name',
+                          subtitle: userName,
+                          onTap: _showChangeNameDialog,
                         ),
-                        child: ListTile(
-                          leading: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: accentColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              isDarkMode ? Icons.dark_mode : Icons.light_mode,
-                              color: accentColor,
-                            ),
-                          ),
-                          title: Text(
-                            'Theme Mode',
-                            style: labelSmall.copyWith(color: textColor),
-                          ),
-                          subtitle: Text(
-                            isDarkMode ? 'Dark Mode' : 'Light Mode',
-                            style: bodySmall.copyWith(
-                              color: secondaryTextColor,
-                            ),
-                          ),
-                          trailing: Switch(
-                            value: isDarkMode,
-                            onChanged: (value) async {
-                              final preferencesProvider =
-                                  Provider.of<PreferencesProvider>(
-                                    context,
-                                    listen: false,
-                                  );
-
-                              try {
-                                await preferencesProvider.updatePreferences(
-                                  theme: value ? 'dark' : 'light',
-                                );
-
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.check_circle,
-                                            color: Colors.white,
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Text(
-                                              'Theme updated successfully',
-                                              style: bodyMedium.copyWith(
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      backgroundColor: successColor,
-                                      behavior: SnackBarBehavior.floating,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      margin: const EdgeInsets.all(16),
-                                    ),
-                                  );
-                                }
-                              } catch (e) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.error_outline,
-                                            color: Colors.white,
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Text(
-                                              preferencesProvider
-                                                      .errorMessage ??
-                                                  'Failed to update theme',
-                                              style: bodyMedium.copyWith(
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      backgroundColor: errorColor,
-                                      behavior: SnackBarBehavior.floating,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      margin: const EdgeInsets.all(16),
-                                    ),
-                                  );
-                                }
-                              }
-                            },
-                            activeThumbColor: accentColor,
-                          ),
+                      ),
+                      const SizedBox(height: spacingMedium),
+                      _staggerOption(
+                        reduceMotion,
+                        1,
+                        _buildProfileOption(
+                          context: context,
+                          icon: Icons.lock_outline,
+                          title: 'Change Password',
+                          subtitle: 'Update your password',
+                          onTap: () {
+                            UiUtils.showInfoSnackBar(
+                              context,
+                              'Change password feature coming soon',
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: spacingMedium),
+                      _staggerOption(
+                        reduceMotion,
+                        2,
+                        _buildThemeToggle(
+                          context: context,
+                          isDarkMode: isDarkMode,
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: spacingLarge),
 
                 // Logout Button
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      onPressed: () => _handleLogout(context),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: BorderSide(color: errorColor),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        'Logout',
-                        style: labelMedium.copyWith(color: errorColor),
-                      ),
-                    ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: spacingMedium,
+                  ),
+                  child: SecondaryButton(
+                    label: 'Logout',
+                    icon: Icons.logout,
+                    color: colors.danger,
+                    onPressed: () => _handleLogout(context),
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: spacingXLarge),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  /// Fades an option row in (always) and slides it up (motion permitting).
+  Widget _staggerOption(bool reduceMotion, int index, Widget child) {
+    final animated = child
+        .animate(delay: staggerStep * index)
+        .fadeIn(duration: animationDurationShort, curve: easeOutStrong);
+    if (reduceMotion) return animated;
+    return animated.slideY(
+      begin: 0.1,
+      end: 0,
+      duration: animationDurationShort,
+      curve: easeOutStrong,
     );
   }
 
@@ -349,48 +236,72 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String subtitle,
     required VoidCallback onTap,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? surfaceColorDark : whiteColor;
-    final textColor = isDark ? whiteColorDark : blackColor;
-    final secondaryTextColor = isDark
-        ? whiteColorDark.withValues(alpha: 0.6)
-        : Colors.grey[600];
-    final accentColor = isDark ? primaryColorDark : primaryColor;
+    final colors = AppColors.of(context);
 
-    return InkWell(
+    return AppCard(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: accentColor.withValues(alpha: 0.2),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: accentColor.withValues(alpha: 0.1),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
+      padding: EdgeInsets.zero,
+      child: ListTile(
+        leading: IconTile(icon: icon),
+        title: Text(title, style: labelSmall.copyWith(color: colors.onSurface)),
+        subtitle: Text(
+          subtitle,
+          style: bodySmall.copyWith(color: colors.secondaryText),
         ),
-        child: ListTile(
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: accentColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: accentColor),
-          ),
-          title: Text(title, style: labelSmall.copyWith(color: textColor)),
-          subtitle: Text(
-            subtitle,
-            style: bodySmall.copyWith(color: secondaryTextColor),
-          ),
-          trailing: Icon(Icons.chevron_right, color: accentColor),
+        trailing: Icon(Icons.chevron_right, color: colors.primary),
+      ),
+    );
+  }
+
+  Widget _buildThemeToggle({
+    required BuildContext context,
+    required bool isDarkMode,
+  }) {
+    final colors = AppColors.of(context);
+
+    return AppCard(
+      padding: EdgeInsets.zero,
+      child: ListTile(
+        leading: IconTile(
+          icon: isDarkMode ? Icons.dark_mode : Icons.light_mode,
+        ),
+        title: Text(
+          'Theme Mode',
+          style: labelSmall.copyWith(color: colors.onSurface),
+        ),
+        subtitle: Text(
+          isDarkMode ? 'Dark Mode' : 'Light Mode',
+          style: bodySmall.copyWith(color: colors.secondaryText),
+        ),
+        trailing: Switch(
+          value: isDarkMode,
+          onChanged: (value) async {
+            final preferencesProvider = Provider.of<PreferencesProvider>(
+              context,
+              listen: false,
+            );
+
+            try {
+              await preferencesProvider.updatePreferences(
+                theme: value ? 'dark' : 'light',
+              );
+
+              if (context.mounted) {
+                UiUtils.showSuccessSnackBar(
+                  context,
+                  'Theme updated successfully',
+                );
+              }
+            } catch (e) {
+              if (context.mounted) {
+                UiUtils.showErrorSnackBar(
+                  context,
+                  preferencesProvider.errorMessage ?? 'Failed to update theme',
+                );
+              }
+            }
+          },
+          activeThumbColor: colors.primary,
         ),
       ),
     );
@@ -398,6 +309,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void _showChangeNameDialog() {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final colors = AppColors.of(context);
     final currentName = authProvider.user?['name']?.toString() ?? '';
     final TextEditingController nameController = TextEditingController(
       text: currentName,
@@ -406,47 +318,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: colors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(borderRadiusLarge),
+        ),
         title: Text(
           'Change Name',
-          style: labelMedium.copyWith(color: blackColor),
+          style: displaySmall.copyWith(color: colors.onSurface),
         ),
         content: TextField(
           controller: nameController,
+          style: bodyMedium.copyWith(color: colors.onSurface),
           decoration: InputDecoration(
             labelText: 'Name',
-            labelStyle: bodyMedium.copyWith(color: Colors.grey[600]),
+            labelStyle: bodyMedium.copyWith(color: colors.secondaryText),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: primaryColor),
+              borderRadius: BorderRadius.circular(borderRadiusSmall),
+              borderSide: BorderSide(color: colors.primary),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: primaryColor, width: 2),
+              borderRadius: BorderRadius.circular(borderRadiusSmall),
+              borderSide: BorderSide(color: colors.primary, width: 2),
             ),
           ),
-          style: bodyMedium,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text(
               'Cancel',
-              style: bodyMedium.copyWith(color: Colors.grey[600]),
+              style: bodyMedium.copyWith(color: colors.secondaryText),
             ),
           ),
           TextButton(
             onPressed: () async {
               final newName = nameController.text.trim();
               if (newName.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Name cannot be empty',
-                      style: bodyMedium.copyWith(color: Colors.white),
-                    ),
-                    backgroundColor: redColor,
-                  ),
-                );
+                UiUtils.showErrorSnackBar(context, 'Name cannot be empty');
                 return;
               }
 
@@ -454,68 +362,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               // Show loading
               if (context.mounted) {
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) =>
-                      const Center(child: CircularProgressIndicator()),
-                );
+                UiUtils.showLoadingDialog(context);
               }
 
               try {
                 await authProvider.updateProfile(name: newName);
                 if (context.mounted) {
-                  Navigator.pop(context); // Close loading
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Row(
-                        children: [
-                          const Icon(Icons.check_circle, color: Colors.white),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Name updated successfully',
-                              style: bodyMedium.copyWith(color: Colors.white),
-                            ),
-                          ),
-                        ],
-                      ),
-                      backgroundColor: greenColor,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      margin: const EdgeInsets.all(16),
-                    ),
+                  UiUtils.closeDialog(context);
+                  UiUtils.showSuccessSnackBar(
+                    context,
+                    'Name updated successfully',
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
-                  if (Navigator.of(context).canPop()) {
-                    Navigator.pop(context); // Close loading
-                  }
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Row(
-                        children: [
-                          const Icon(Icons.error_outline, color: Colors.white),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              authProvider.errorMessage ??
-                                  'Failed to update name',
-                              style: bodyMedium.copyWith(color: Colors.white),
-                            ),
-                          ),
-                        ],
-                      ),
-                      backgroundColor: redColor,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      margin: const EdgeInsets.all(16),
-                    ),
+                  UiUtils.closeDialog(context);
+                  UiUtils.showErrorSnackBar(
+                    context,
+                    authProvider.errorMessage ?? 'Failed to update name',
                   );
                 }
               }
@@ -523,7 +387,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Text(
               'Save',
               style: bodyMedium.copyWith(
-                color: primaryColor,
+                color: colors.primary,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -533,65 +397,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _handleLogout(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Logout', style: labelMedium.copyWith(color: blackColor)),
-        content: Text('Are you sure you want to logout?', style: bodyMedium),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: bodyMedium.copyWith(color: Colors.grey[600]),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context); // Close dialog
-
-              final authProvider = Provider.of<AuthProvider>(
-                context,
-                listen: false,
-              );
-
-              // Show loading indicator
-              if (context.mounted) {
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) =>
-                      const Center(child: CircularProgressIndicator()),
-                );
-              }
-
-              try {
-                await authProvider.logout();
-
-                // Close loading dialog - navigation is handled by auth_provider
-                if (context.mounted && Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
-                }
-              } catch (e) {
-                // Close loading dialog if still open - navigation is handled by auth_provider
-                if (context.mounted && Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: redColor,
-              foregroundColor: Colors.white,
-            ),
-            child: Text(
-              'Logout',
-              style: bodyMedium.copyWith(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
+  Future<void> _handleLogout(BuildContext context) async {
+    final confirmed = await UiUtils.showConfirmDialog(
+      context,
+      title: 'Logout',
+      message: 'Are you sure you want to logout?',
+      confirmText: 'Logout',
+      confirmColor: AppColors.of(context).danger,
     );
+
+    if (!confirmed || !context.mounted) return;
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    // Show loading indicator
+    UiUtils.showLoadingDialog(context);
+
+    try {
+      await authProvider.logout();
+
+      // Close loading dialog - navigation is handled by auth_provider
+      if (context.mounted) UiUtils.closeDialog(context);
+    } catch (e) {
+      // Close loading dialog if still open - navigation handled by auth_provider
+      if (context.mounted) UiUtils.closeDialog(context);
+    }
   }
 }

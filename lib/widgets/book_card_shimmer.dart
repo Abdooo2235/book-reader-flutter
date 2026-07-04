@@ -1,3 +1,4 @@
+import 'package:book_reader_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 import '../helpers/consts.dart';
@@ -7,19 +8,11 @@ class BookCardShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // Shimmer colors based on theme
-    final baseColor = isDark
-        ? primaryColorDark.withValues(alpha: 0.3)
-        : Colors.grey[300]!;
-    final highlightColor = isDark
-        ? primaryColorDark.withValues(alpha: 0.6)
-        : Colors.grey[100]!;
-    final containerColor = isDark ? surfaceColorDark : Colors.white;
-    final shadowColor = isDark
-        ? Colors.black.withValues(alpha: 0.4)
-        : Colors.black.withAlpha(25);
+    final colors = AppColors.of(context);
+    final baseColor = colors.border;
+    final highlightColor = colors.surface;
+    final containerColor = colors.surface;
+    final shadowColor = colors.shadow;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,7 +26,7 @@ class BookCardShimmer extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: containerColor,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(borderRadiusMedium),
                 boxShadow: [
                   BoxShadow(
                     color: shadowColor,
