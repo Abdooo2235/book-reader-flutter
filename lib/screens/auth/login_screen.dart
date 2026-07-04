@@ -3,10 +3,13 @@ import 'package:book_reader_app/helpers/ui_utils.dart';
 import 'package:book_reader_app/providers/auth_provider.dart';
 import 'package:book_reader_app/screens/auth/signup_screen.dart';
 import 'package:book_reader_app/screens/main/tabs_screen.dart';
+import 'package:book_reader_app/theme/app_colors.dart';
 import 'package:book_reader_app/widgets/app_logo.dart';
+import 'package:book_reader_app/widgets/common/app_button.dart';
 import 'package:book_reader_app/widgets/text_field_widget.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -96,8 +99,27 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+
+    // Subtle staggered entrance for the form; slide is skipped under
+    // reduced-motion, fade is always kept.
+    var order = 0;
+    Widget stagger(Widget child) {
+      final animation = child
+          .animate(delay: (order++ * staggerStep.inMilliseconds).ms)
+          .fadeIn(duration: animationDurationMedium);
+      if (reduceMotion) return animation;
+      return animation.slideY(
+        begin: 0.1,
+        end: 0,
+        duration: animationDurationMedium,
+        curve: easeOutStrong,
+      );
+    }
+
     return Scaffold(
-      backgroundColor: scaffoldBackgroundColor,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -109,112 +131,95 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   SizedBox(height: MediaQuery.of(context).size.height * 0.08),
                   // App Logo
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: spacingSmall),
-                    child: AppLogo.login(),
+                  stagger(
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: spacingSmall),
+                      child: AppLogo.login(),
+                    ),
                   ),
                   const SizedBox(height: spacingLarge),
-                  TextFieldWidget(
-                    label: "Email",
-                    hintText: "Enter your email address",
-                    controller: email,
-                    validator: emailValidator,
-                    keyboardType: TextInputType.emailAddress,
-                    prefixWidget: Icon(Icons.email, color: primaryColor),
-                    horizontalPadding: 0,
-                    verticalPadding: spacingSmall,
-                  ),
-                  TextFieldWidget(
-                    obsecureText: obsecurePassword,
-                    suffixWidget: GestureDetector(
-                      onTap: () => setState(() {
-                        obsecurePassword = !obsecurePassword;
-                      }),
-                      child: Icon(
-                        obsecurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: primaryColor,
-                      ),
-                    ),
-                    label: "Password",
-                    hintText: "Enter your password",
-                    controller: password,
-                    validator: passwordValidator,
-                    prefixWidget: Icon(Icons.lock, color: primaryColor),
-                    horizontalPadding: 0,
-                    verticalPadding: spacingSmall,
-                  ),
-                  const SizedBox(height: spacingMedium),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: spacingMedium,
-                    ),
-                    child: Consumer<AuthProvider>(
-                      builder: (context, authProvider, _) {
-                        return SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: authProvider.busy ? null : _handleLogin,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryColor,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  borderRadiusMedium,
-                                ),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: authProvider.busy
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
-                                      ),
-                                    ),
-                                  )
-                                : Text(
-                                    "Login",
-                                    style: labelMedium.copyWith(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                          ),
-                        );
-                      },
+                  stagger(
+                    TextFieldWidget(
+                      label: "Email",
+                      hintText: "Enter your email address",
+                      controller: email,
+                      validator: emailValidator,
+                      keyboardType: TextInputType.emailAddress,
+                      prefixWidget: Icon(Icons.email, color: colors.primary),
+                      horizontalPadding: 0,
+                      verticalPadding: spacingSmall,
                     ),
                   ),
-                  const SizedBox(height: spacingMedium),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Don't have an account?",
-                        style: bodyMedium.copyWith(color: Colors.grey[700]),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const SignupScreen(),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          "Sign Up",
-                          style: labelSmall.copyWith(
-                            color: primaryColor,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  stagger(
+                    TextFieldWidget(
+                      obsecureText: obsecurePassword,
+                      suffixWidget: GestureDetector(
+                        onTap: () => setState(() {
+                          obsecurePassword = !obsecurePassword;
+                        }),
+                        child: Icon(
+                          obsecurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: colors.primary,
                         ),
                       ),
-                    ],
+                      label: "Password",
+                      hintText: "Enter your password",
+                      controller: password,
+                      validator: passwordValidator,
+                      prefixWidget: Icon(Icons.lock, color: colors.primary),
+                      horizontalPadding: 0,
+                      verticalPadding: spacingSmall,
+                    ),
+                  ),
+                  const SizedBox(height: spacingMedium),
+                  stagger(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: spacingMedium,
+                      ),
+                      child: Consumer<AuthProvider>(
+                        builder: (context, authProvider, _) {
+                          return PrimaryButton(
+                            label: "Login",
+                            busy: authProvider.busy,
+                            onPressed: _handleLogin,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: spacingMedium),
+                  stagger(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Don't have an account?",
+                          style: bodyMedium.copyWith(
+                            color: colors.secondaryText,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const SignupScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "Sign Up",
+                            style: labelSmall.copyWith(
+                              color: colors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                 ],

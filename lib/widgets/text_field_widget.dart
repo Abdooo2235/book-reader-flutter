@@ -1,4 +1,5 @@
 import 'package:book_reader_app/helpers/consts.dart';
+import 'package:book_reader_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -31,6 +32,7 @@ class TextFieldWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: horizontalPadding,
@@ -44,7 +46,10 @@ class TextFieldWidget extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: Row(
                 children: [
-                  Text(label!, style: labelSmall.copyWith(color: primaryColor)),
+                  Text(
+                    label!,
+                    style: labelSmall.copyWith(color: colors.primary),
+                  ),
                 ],
               ),
             ),
@@ -54,39 +59,40 @@ class TextFieldWidget extends StatelessWidget {
             validator: validator,
             controller: controller,
             keyboardType: keyboardType,
+            style: bodyMedium.copyWith(color: colors.onSurface),
             decoration: InputDecoration(
               hintText: hintText,
-              hintStyle: bodyMedium.copyWith(color: Colors.grey[400]),
+              hintStyle: bodyMedium.copyWith(color: colors.secondaryText),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: colors.surface,
               suffixIcon: suffixWidget,
               prefixIcon: prefixWidget,
               contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 16,
+                horizontal: spacingMedium,
+                vertical: spacingMedium,
               ),
               border: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey[300]!),
+                borderSide: BorderSide(color: colors.border),
                 borderRadius: BorderRadius.circular(borderRadiusMedium),
               ),
               enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey[300]!),
+                borderSide: BorderSide(color: colors.border),
                 borderRadius: BorderRadius.circular(borderRadiusMedium),
               ),
               focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: primaryColor, width: 2),
+                borderSide: BorderSide(color: colors.primary, width: 2),
                 borderRadius: BorderRadius.circular(borderRadiusMedium),
               ),
               errorBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: redColor),
+                borderSide: BorderSide(color: colors.danger),
                 borderRadius: BorderRadius.circular(borderRadiusMedium),
               ),
               focusedErrorBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: redColor, width: 2),
+                borderSide: BorderSide(color: colors.danger, width: 2),
                 borderRadius: BorderRadius.circular(borderRadiusMedium),
               ),
               disabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey[300]!),
+                borderSide: BorderSide(color: colors.border),
                 borderRadius: BorderRadius.circular(borderRadiusMedium),
               ),
             ),

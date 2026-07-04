@@ -1,131 +1,118 @@
 import 'package:book_reader_app/helpers/consts.dart';
+import 'package:book_reader_app/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
-/// Utility class for common UI operations like SnackBars and dialogs
+/// Shared SnackBar + dialog helpers. This is the single place snackbars are
+/// built — screens must call these instead of hand-rolling
+/// `ScaffoldMessenger...showSnackBar` (which was duplicated 17× before).
 class UiUtils {
-  /// Shows a success SnackBar
+  const UiUtils._();
+
+  static void _showSnackBar(
+    BuildContext context,
+    String message, {
+    required Color background,
+    IconData? icon,
+    required Duration duration,
+  }) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              if (icon != null) ...[
+                Icon(icon, color: Colors.white),
+                const SizedBox(width: spacingSmall + 4),
+              ],
+              Expanded(
+                child: Text(
+                  message,
+                  style: bodyMedium.copyWith(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: background,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadiusMedium),
+          ),
+          margin: const EdgeInsets.all(spacingMedium),
+          duration: duration,
+        ),
+      );
+  }
+
+  /// Success (green) SnackBar.
   static void showSuccessSnackBar(
     BuildContext context,
     String message, {
-    Duration duration = const Duration(seconds: 3),
-  }) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                message,
-                style: bodyMedium.copyWith(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: greenColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: duration,
-      ),
-    );
-  }
+    Duration duration = snackBarDurationMedium,
+  }) => _showSnackBar(
+    context,
+    message,
+    background: AppColors.of(context).success,
+    icon: Icons.check_circle,
+    duration: duration,
+  );
 
-  /// Shows an error SnackBar
+  /// Error (danger) SnackBar.
   static void showErrorSnackBar(
     BuildContext context,
     String message, {
-    Duration duration = const Duration(seconds: 4),
-  }) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                message,
-                style: bodyMedium.copyWith(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: redColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: duration,
-      ),
-    );
-  }
+    Duration duration = snackBarDurationLong,
+  }) => _showSnackBar(
+    context,
+    message,
+    background: AppColors.of(context).danger,
+    icon: Icons.error_outline,
+    duration: duration,
+  );
 
-  /// Shows an info SnackBar
+  /// Info (primary) SnackBar.
   static void showInfoSnackBar(
     BuildContext context,
     String message, {
-    Duration duration = const Duration(seconds: 3),
-  }) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.info_outline, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                message,
-                style: bodyMedium.copyWith(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: primaryColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: duration,
-      ),
-    );
-  }
+    Duration duration = snackBarDurationMedium,
+  }) => _showSnackBar(
+    context,
+    message,
+    background: AppColors.of(context).primary,
+    icon: Icons.info_outline,
+    duration: duration,
+  );
 
-  /// Shows a simple SnackBar without icons
+  /// Plain SnackBar without an icon.
   static void showSnackBar(
     BuildContext context,
     String message, {
     Color? backgroundColor,
-    Duration duration = const Duration(seconds: 3),
-  }) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: bodyMedium.copyWith(color: Colors.white)),
-        backgroundColor: backgroundColor ?? primaryColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: duration,
-      ),
-    );
-  }
+    Duration duration = snackBarDurationMedium,
+  }) => _showSnackBar(
+    context,
+    message,
+    background: backgroundColor ?? AppColors.of(context).primary,
+    duration: duration,
+  );
 
-  /// Shows a loading dialog
+  /// Blocking loading dialog.
   static void showLoadingDialog(BuildContext context) {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (_) => const Center(child: CircularProgressIndicator()),
     );
   }
 
-  /// Closes the current dialog if one is open
+  /// Closes the current dialog if one is open.
   static void closeDialog(BuildContext context) {
     if (Navigator.of(context).canPop()) {
       Navigator.of(context).pop();
     }
   }
 
-  /// Shows a confirmation dialog
+  /// Confirmation dialog returning true when confirmed.
   static Future<bool> showConfirmDialog(
     BuildContext context, {
     required String title,
@@ -134,30 +121,37 @@ class UiUtils {
     String cancelText = 'Cancel',
     Color? confirmColor,
   }) async {
+    final colors = AppColors.of(context);
     final result = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(title, style: labelMedium.copyWith(color: blackColor)),
-        content: Text(message, style: bodyMedium),
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: colors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(borderRadiusLarge),
+        ),
+        title: Text(
+          title,
+          style: displaySmall.copyWith(color: colors.onSurface),
+        ),
+        content: Text(
+          message,
+          style: bodyMedium.copyWith(color: colors.secondaryText),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
             child: Text(
               cancelText,
-              style: bodyMedium.copyWith(color: Colors.grey[600]),
+              style: bodyMedium.copyWith(color: colors.secondaryText),
             ),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: confirmColor ?? primaryColor,
-              foregroundColor: Colors.white,
+              backgroundColor: confirmColor ?? colors.primary,
+              foregroundColor: colors.onPrimary,
             ),
-            child: Text(
-              confirmText,
-              style: bodyMedium.copyWith(color: Colors.white),
-            ),
+            child: Text(confirmText),
           ),
         ],
       ),

@@ -1,4 +1,5 @@
 import 'package:book_reader_app/helpers/consts.dart';
+import 'package:book_reader_app/theme/app_colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -11,6 +12,10 @@ class BookCard extends StatelessWidget {
   final bool isSelected;
   final bool showProgressCircle;
 
+  /// Book id used to build the shared-element `Hero` tag so the cover morphs
+  /// into the details screen (which uses the same `book-cover-<id>` convention).
+  final int? bookId;
+
   const BookCard({
     super.key,
     required this.title,
@@ -20,12 +25,57 @@ class BookCard extends StatelessWidget {
     this.coverUrl,
     this.isSelected = false,
     this.showProgressCircle = false,
+    this.bookId,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? whiteColorDark : blackColor;
+    final colors = AppColors.of(context);
+
+    Widget cover = Container(
+      decoration: BoxDecoration(
+        color: coverColor,
+        borderRadius: BorderRadius.circular(borderRadiusMedium),
+        border: isSelected ? Border.all(color: colors.primary, width: 3) : null,
+        boxShadow: [
+          BoxShadow(
+            color: isSelected
+                ? colors.primary.withValues(alpha: 0.5)
+                : colors.shadow,
+            blurRadius: isSelected ? 8 : 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: coverUrl != null && coverUrl!.isNotEmpty
+          ? Image.network(
+              coverUrl!,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                        : null,
+                    strokeWidth: 2,
+                    color: Colors.white.withValues(alpha: 0.7),
+                  ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return _buildPlaceholder();
+              },
+            )
+          : _buildPlaceholder(),
+    );
+
+    // Shared-element transition into the details screen.
+    if (bookId != null) {
+      cover = Hero(tag: 'book-cover-$bookId', child: cover);
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,61 +86,20 @@ class BookCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Book Cover
-              Container(
-                decoration: BoxDecoration(
-                  color: coverColor,
-                  borderRadius: BorderRadius.circular(12),
-                  border: isSelected
-                      ? Border.all(color: primaryColor, width: 3)
-                      : null,
-                  boxShadow: [
-                    BoxShadow(
-                      color: isSelected
-                          ? primaryColor.withValues(alpha: 0.5)
-                          : Colors.black.withAlpha(25),
-                      blurRadius: isSelected ? 8 : 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: coverUrl != null && coverUrl!.isNotEmpty
-                    ? Image.network(
-                        coverUrl!,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
-                                  : null,
-                              strokeWidth: 2,
-                              color: Colors.white.withValues(alpha: 0.7),
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return _buildPlaceholder();
-                        },
-                      )
-                    : _buildPlaceholder(),
-              ),
+              cover,
               // Selection Overlay
               if (isSelected)
                 Container(
                   decoration: BoxDecoration(
-                    color: primaryColor.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
+                    color: colors.primary.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(borderRadiusMedium),
                   ),
                 ),
               // Progress Badge (Top Left) - Only show if not using circle at bottom
               if (progress > 0 && !showProgressCircle)
                 Positioned(
-                  top: 8,
-                  left: 8,
+                  top: spacingSmall,
+                  left: spacingSmall,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 6,
@@ -98,7 +107,7 @@ class BookCard extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: blackColor.withAlpha(200),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(borderRadiusSmall),
                     ),
                     child: Text(
                       "${progress.toInt()}%",
@@ -113,8 +122,8 @@ class BookCard extends StatelessWidget {
 
               // Progress Circle or Play Button (Bottom Right)
               Positioned(
-                bottom: 8,
-                right: 8,
+                bottom: spacingSmall,
+                right: spacingSmall,
                 child: showProgressCircle && progress > 0
                     ? Container(
                         width: 32,
@@ -124,7 +133,7 @@ class BookCard extends StatelessWidget {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withAlpha(25),
+                              color: colors.shadow,
                               blurRadius: 2,
                               offset: const Offset(0, 1),
                             ),
@@ -148,7 +157,7 @@ class BookCard extends StatelessWidget {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withAlpha(25),
+                              color: colors.shadow,
                               blurRadius: 2,
                               offset: const Offset(0, 1),
                             ),
@@ -164,14 +173,14 @@ class BookCard extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: spacingSmall),
         // Title
         Text(
           title,
           style: labelSmall.copyWith(
             fontSize: 12,
             height: 1.2,
-            color: textColor,
+            color: colors.onSurface,
           ),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
@@ -182,7 +191,7 @@ class BookCard extends StatelessWidget {
             author!,
             style: bodySmall.copyWith(
               fontSize: 10,
-              color: textColor.withValues(alpha: 0.6),
+              color: colors.secondaryText,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,

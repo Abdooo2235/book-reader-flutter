@@ -1,7 +1,10 @@
-import 'package:book_reader_app/helpers/consts.dart';
 import 'package:book_reader_app/providers/book_provider.dart';
 import 'package:book_reader_app/screens/main/book_details_screen.dart';
+import 'package:book_reader_app/theme/app_colors.dart';
 import 'package:book_reader_app/widgets/books_grid.dart';
+import 'package:book_reader_app/widgets/common/app_header.dart';
+import 'package:book_reader_app/widgets/common/empty_state.dart';
+import 'package:book_reader_app/widgets/common/skeletons.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter/material.dart';
@@ -26,36 +29,13 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? whiteColorDark : blackColor;
-    final secondaryTextColor = isDark
-        ? whiteColorDark.withValues(alpha: 0.6)
-        : Colors.grey[600];
-    final tertiaryTextColor = isDark
-        ? whiteColorDark.withValues(alpha: 0.5)
-        : Colors.grey[500];
-    final accentColor = isDark ? primaryColorDark : primaryColor;
+    final colors = AppColors.of(context);
 
     return Scaffold(
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Favourites',
-                  style: bodySmall.copyWith(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                    color: textColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Divider(color: accentColor, thickness: 0.25),
+          const AppHeader(title: 'Favourites'),
+          Divider(color: colors.border, height: 1),
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async {
@@ -65,45 +45,20 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
                 );
                 await bookProvider.loadFavorites();
               },
-              color: accentColor,
+              color: colors.primary,
               child: Consumer<BookProvider>(
                 builder: (context, bookProvider, child) {
                   final favorites = bookProvider.favorites;
 
+                  if (bookProvider.busy && favorites.isEmpty) {
+                    return const BooksGridSkeleton();
+                  }
+
                   if (favorites.isEmpty) {
-                    return ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      children: [
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.6,
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.favorite_border,
-                                  size: 64,
-                                  color: accentColor.withValues(alpha: 0.5),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'No favourites yet',
-                                  style: bodyLarge.copyWith(
-                                    color: secondaryTextColor,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Add books to your favourites',
-                                  style: bodyMedium.copyWith(
-                                    color: tertiaryTextColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+                    return const EmptyState(
+                      icon: Icons.favorite_border,
+                      title: 'No favourites yet',
+                      message: 'Add books to your favourites',
                     );
                   }
 

@@ -1,8 +1,12 @@
 import 'package:book_reader_app/helpers/consts.dart';
+import 'package:book_reader_app/helpers/ui_utils.dart';
 import 'package:book_reader_app/providers/library_provider.dart';
 import 'package:book_reader_app/providers/progress_provider.dart';
 import 'package:book_reader_app/screens/main/book_details_screen.dart';
+import 'package:book_reader_app/theme/app_colors.dart';
 import 'package:book_reader_app/widgets/books_grid.dart';
+import 'package:book_reader_app/widgets/common/empty_state.dart';
+import 'package:book_reader_app/widgets/common/skeletons.dart';
 import 'package:book_reader_app/widgets/library_tab_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -44,36 +48,8 @@ class _LibraryScreenState extends State<LibraryScreen>
     IconData emptyIcon, {
     Map<int, Map<String, dynamic>>? progressMap,
   }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final secondaryTextColor = isDark
-        ? whiteColorDark.withValues(alpha: 0.6)
-        : Colors.grey[600];
-    final iconColor = isDark
-        ? whiteColorDark.withValues(alpha: 0.3)
-        : Colors.grey[300];
-
     if (books.isEmpty) {
-      return ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        children: [
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.6,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(emptyIcon, size: 64, color: iconColor),
-                  const SizedBox(height: 16),
-                  Text(
-                    emptyMessage,
-                    style: bodyLarge.copyWith(color: secondaryTextColor),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      );
+      return EmptyState(icon: emptyIcon, title: emptyMessage);
     }
     return BooksGrid(
       books: books,
@@ -128,52 +104,22 @@ class _LibraryScreenState extends State<LibraryScreen>
     final bookIds = _selectedBookIds.toList();
 
     // Show confirmation dialog
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Remove Books'),
-        content: Text(
+    final confirmed = await UiUtils.showConfirmDialog(
+      context,
+      title: 'Remove Books',
+      message:
           'Are you sure you want to remove ${bookIds.length} book(s) from your library?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: redColor),
-            child: const Text('Remove'),
-          ),
-        ],
-      ),
+      confirmText: 'Remove',
+      confirmColor: AppColors.of(context).danger,
     );
 
-    if (confirmed == true && mounted) {
+    if (confirmed && mounted) {
       try {
         await libraryProvider.removeBooksFromLibrary(bookIds);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.check_circle, color: Colors.white),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      '${bookIds.length} book(s) removed successfully',
-                      style: bodyMedium.copyWith(color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: greenColor,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              margin: const EdgeInsets.all(16),
-            ),
+          UiUtils.showSuccessSnackBar(
+            context,
+            '${bookIds.length} book(s) removed successfully',
           );
         }
         setState(() {
@@ -182,27 +128,9 @@ class _LibraryScreenState extends State<LibraryScreen>
         });
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.error_outline, color: Colors.white),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      libraryProvider.errorMessage ?? 'Failed to remove books',
-                      style: bodyMedium.copyWith(color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: redColor,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              margin: const EdgeInsets.all(16),
-            ),
+          UiUtils.showErrorSnackBar(
+            context,
+            libraryProvider.errorMessage ?? 'Failed to remove books',
           );
         }
       }
@@ -211,44 +139,45 @@ class _LibraryScreenState extends State<LibraryScreen>
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark
-        ? scaffoldBackgroundColorDark
-        : scaffoldBackgroundColor;
-    final textColor = isDark ? whiteColorDark : blackColor;
-    final accentColor = isDark ? primaryColorDark : primaryColor;
-    final unselectedTabColor = isDark
-        ? whiteColorDark.withValues(alpha: 0.5)
-        : Colors.grey;
+    final colors = AppColors.of(context);
+    final brightness = Theme.of(context).brightness;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: backgroundColor,
+        backgroundColor: colors.background,
         elevation: 0,
         systemOverlayStyle: SystemUiOverlayStyle(
           statusBarColor: Colors.transparent,
-          statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
-          statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+          statusBarIconBrightness: brightness == Brightness.dark
+              ? Brightness.light
+              : Brightness.dark,
+          statusBarBrightness: brightness,
         ),
         title: _isSelectionMode
             ? Text(
                 '${_selectedBookIds.length} selected',
-                style: displaySmall.copyWith(fontSize: 24, color: textColor),
+                style: displaySmall.copyWith(
+                  fontSize: 24,
+                  color: colors.onSurface,
+                ),
               )
             : Text(
                 'My Library',
-                style: displaySmall.copyWith(fontSize: 24, color: textColor),
+                style: displaySmall.copyWith(
+                  fontSize: 24,
+                  color: colors.onSurface,
+                ),
               ),
         actions: [
           if (_isSelectionMode)
             IconButton(
               icon: const Icon(Icons.delete_outline),
-              color: textColor,
+              color: colors.onSurface,
               onPressed: _selectedBookIds.isEmpty ? null : _removeSelectedBooks,
             ),
           PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert, color: textColor),
+            icon: Icon(Icons.more_vert, color: colors.onSurface),
             onSelected: (value) {
               if (value == 'select') {
                 _toggleSelectionMode();
@@ -263,9 +192,9 @@ class _LibraryScreenState extends State<LibraryScreen>
                       _isSelectionMode
                           ? Icons.check_box
                           : Icons.check_box_outline_blank,
-                      color: accentColor,
+                      color: colors.primary,
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: spacingSmall + 4),
                     Text(_isSelectionMode ? 'Cancel Selection' : 'Select'),
                   ],
                 ),
@@ -275,9 +204,9 @@ class _LibraryScreenState extends State<LibraryScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
-          labelColor: accentColor,
-          unselectedLabelColor: unselectedTabColor,
-          indicatorColor: accentColor,
+          labelColor: colors.primary,
+          unselectedLabelColor: colors.secondaryText,
+          indicatorColor: colors.primary,
           labelPadding: const EdgeInsets.symmetric(horizontal: 2),
           tabs: [
             Tab(
@@ -336,7 +265,7 @@ class _LibraryScreenState extends State<LibraryScreen>
       body: Consumer2<LibraryProvider, ProgressProvider>(
         builder: (context, libraryProvider, progressProvider, child) {
           if (libraryProvider.busy || progressProvider.busy) {
-            return Center(child: CircularProgressIndicator(color: accentColor));
+            return const BooksGridSkeleton();
           }
 
           final readingBooks = libraryProvider.getReadingBooks(
@@ -358,7 +287,7 @@ class _LibraryScreenState extends State<LibraryScreen>
                     progressProvider.loadAllProgress(),
                   ]);
                 },
-                color: accentColor,
+                color: colors.primary,
                 child: _buildBookList(
                   context,
                   readingBooks,
@@ -376,7 +305,7 @@ class _LibraryScreenState extends State<LibraryScreen>
                     progressProvider.loadAllProgress(),
                   ]);
                 },
-                color: accentColor,
+                color: colors.primary,
                 child: _buildBookList(
                   context,
                   completedBooks,
@@ -393,7 +322,7 @@ class _LibraryScreenState extends State<LibraryScreen>
                     progressProvider.loadAllProgress(),
                   ]);
                 },
-                color: accentColor,
+                color: colors.primary,
                 child: _buildBookList(
                   context,
                   allBooks,

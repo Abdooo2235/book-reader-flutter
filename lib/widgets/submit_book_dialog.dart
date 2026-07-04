@@ -3,6 +3,9 @@ import 'package:book_reader_app/helpers/consts.dart';
 import 'package:book_reader_app/helpers/ui_utils.dart';
 import 'package:book_reader_app/providers/book_provider.dart';
 import 'package:book_reader_app/providers/category_provider.dart';
+import 'package:book_reader_app/theme/app_colors.dart';
+import 'package:book_reader_app/widgets/common/app_button.dart';
+import 'package:book_reader_app/widgets/common/app_card.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -361,23 +364,18 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
   }
 
   void _showSuccessDialog() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final dialogColor = isDark ? surfaceColorDark : whiteColor;
-    final textColor = isDark ? whiteColorDark : blackColor;
-    final secondaryTextColor = isDark
-        ? whiteColorDark.withValues(alpha: 0.7)
-        : Colors.grey[700];
-    final accentColor = isDark ? primaryColorDark : primaryColor;
-    final successColor = isDark ? greenColorDark : greenColor;
+    final colors = AppColors.of(context);
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
-        backgroundColor: dialogColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: colors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(borderRadiusXLarge),
+        ),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(spacingLarge),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -386,54 +384,54 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: successColor.withValues(alpha: 0.1),
+                  color: colors.success.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(Icons.check_circle, color: successColor, size: 50),
+                child: Icon(
+                  Icons.check_circle,
+                  color: colors.success,
+                  size: 50,
+                ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: spacingLarge),
 
               // Title
               Text(
                 'Book Submitted Successfully!',
-                style: labelLarge.copyWith(
-                  color: textColor,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: displaySmall.copyWith(color: colors.onSurface),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: spacingMedium),
 
               // Message
               Text(
                 _submittedBookTitle != null
                     ? 'Your book "$_submittedBookTitle" has been submitted for review.'
                     : 'Your book has been submitted for review.',
-                style: bodyMedium.copyWith(color: secondaryTextColor),
+                style: bodyMedium.copyWith(color: colors.secondaryText),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: spacingSmall),
 
               // Admin Approval Info
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(spacingMedium),
                 decoration: BoxDecoration(
-                  color: accentColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  color: colors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(borderRadiusMedium),
                   border: Border.all(
-                    color: accentColor.withValues(alpha: 0.3),
-                    width: 1,
+                    color: colors.primary.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: accentColor, size: 24),
-                    const SizedBox(width: 12),
+                    Icon(Icons.info_outline, color: colors.primary, size: 24),
+                    const SizedBox(width: spacingMedium),
                     Expanded(
                       child: Text(
                         'Your book is pending admin approval. You will be notified once it\'s approved and published.',
                         style: bodySmall.copyWith(
-                          color: accentColor,
+                          color: colors.primaryText,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -441,26 +439,12 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: spacingLarge),
 
               // OK Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: accentColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    'Got it',
-                    style: labelMedium.copyWith(color: Colors.white),
-                  ),
-                ),
+              PrimaryButton(
+                label: 'Got it',
+                onPressed: () => Navigator.pop(context),
               ),
             ],
           ),
@@ -469,34 +453,60 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
     );
   }
 
+  /// Shared decoration for the dialog's form fields, so the fill/border/radius
+  /// aren't re-specified on every input.
+  InputDecoration _fieldDecoration(
+    AppColors colors, {
+    required String label,
+    required IconData icon,
+    Widget? suffixIcon,
+    bool alignLabelWithHint = false,
+    EdgeInsetsGeometry? prefixPadding,
+  }) {
+    final prefix = Icon(icon, color: colors.primary);
+    return InputDecoration(
+      labelText: label,
+      labelStyle: bodyMedium.copyWith(color: colors.secondaryText),
+      prefixIcon: prefixPadding != null
+          ? Padding(padding: prefixPadding, child: prefix)
+          : prefix,
+      alignLabelWithHint: alignLabelWithHint,
+      suffixIcon: suffixIcon,
+      filled: true,
+      fillColor: colors.background,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(borderRadiusMedium),
+        borderSide: BorderSide(color: colors.border),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(borderRadiusMedium),
+        borderSide: BorderSide(color: colors.border),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(borderRadiusMedium),
+        borderSide: BorderSide(color: colors.primary, width: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final dialogColor = isDark ? surfaceColorDark : whiteColor;
-    final headerColor = isDark
-        ? scaffoldBackgroundColorDark
-        : primaryColor.withValues(alpha: 0.05);
-    final textColor = isDark ? whiteColorDark : blackColor;
-    final secondaryTextColor = isDark
-        ? whiteColorDark.withValues(alpha: 0.6)
-        : Colors.grey[600];
-    final accentColor = isDark ? primaryColorDark : primaryColor;
-    final formFieldColor = isDark
-        ? scaffoldBackgroundColorDark
-        : scaffoldBackgroundColor;
-    final closeButtonColor = isDark ? surfaceColorDark : Colors.grey[100];
+    final colors = AppColors.of(context);
 
     return Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      insetPadding: const EdgeInsets.symmetric(
+        horizontal: spacingMedium,
+        vertical: spacingLarge,
+      ),
       child: Container(
         constraints: const BoxConstraints(maxHeight: 700),
         decoration: BoxDecoration(
-          color: dialogColor,
-          borderRadius: BorderRadius.circular(20),
+          color: colors.surface,
+          borderRadius: BorderRadius.circular(borderRadiusXLarge),
           boxShadow: [
             BoxShadow(
-              color: accentColor.withValues(alpha: isDark ? 0.3 : 0.2),
+              color: colors.shadow,
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -509,53 +519,39 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
             children: [
               // Header
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(spacingLarge),
                 decoration: BoxDecoration(
-                  color: headerColor,
+                  color: colors.primary.withValues(alpha: 0.06),
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
+                    topLeft: Radius.circular(borderRadiusXLarge),
+                    topRight: Radius.circular(borderRadiusXLarge),
                   ),
-                  border: Border(
-                    bottom: BorderSide(
-                      color: accentColor.withValues(alpha: 0.2),
-                      width: 1,
-                    ),
-                  ),
+                  border: Border(bottom: BorderSide(color: colors.border)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: accentColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            Icons.upload_file,
-                            color: accentColor,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
+                        const IconTile(icon: Icons.upload_file),
+                        const SizedBox(width: spacingMedium),
                         Text(
                           'Submit New Book',
-                          style: labelLarge.copyWith(color: textColor),
+                          style: labelLarge.copyWith(color: colors.onSurface),
                         ),
                       ],
                     ),
                     IconButton(
-                      icon: Icon(Icons.close, color: secondaryTextColor),
+                      icon: Icon(Icons.close, color: colors.secondaryText),
                       onPressed: _isSubmitting
                           ? null
                           : () => Navigator.pop(context),
                       style: IconButton.styleFrom(
-                        backgroundColor: closeButtonColor,
+                        backgroundColor: colors.background,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(
+                            borderRadiusSmall,
+                          ),
                         ),
                       ),
                     ),
@@ -566,45 +562,39 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
               // Form Content
               Flexible(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(spacingLarge),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Title Field
                       TextFormField(
                         controller: _titleController,
-                        decoration: InputDecoration(
-                          labelText: 'Title *',
-                          prefixIcon: Icon(Icons.title, color: accentColor),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          filled: true,
-                          fillColor: formFieldColor,
+                        style: bodyMedium.copyWith(color: colors.onSurface),
+                        decoration: _fieldDecoration(
+                          colors,
+                          label: 'Title *',
+                          icon: Icons.title,
                         ),
                         validator: (value) => value?.isEmpty ?? true
                             ? 'Please enter book title'
                             : null,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: spacingMedium),
 
                       // Author Field
                       TextFormField(
                         controller: _authorController,
-                        decoration: InputDecoration(
-                          labelText: 'Author *',
-                          prefixIcon: Icon(Icons.person, color: accentColor),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          filled: true,
-                          fillColor: formFieldColor,
+                        style: bodyMedium.copyWith(color: colors.onSurface),
+                        decoration: _fieldDecoration(
+                          colors,
+                          label: 'Author *',
+                          icon: Icons.person,
                         ),
                         validator: (value) => value?.isEmpty ?? true
                             ? 'Please enter author name'
                             : null,
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: spacingMedium),
 
                       // Category Dropdown
                       Consumer<CategoryProvider>(
@@ -616,17 +606,10 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
 
                           if (categoryProvider.busy) {
                             return DropdownButtonFormField<int>(
-                              decoration: InputDecoration(
-                                labelText: 'Category *',
-                                prefixIcon: Icon(
-                                  Icons.category,
-                                  color: accentColor,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                filled: true,
-                                fillColor: formFieldColor,
+                              decoration: _fieldDecoration(
+                                colors,
+                                label: 'Category *',
+                                icon: Icons.category,
                                 suffixIcon: const SizedBox(
                                   width: 20,
                                   height: 20,
@@ -646,17 +629,10 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
 
                           if (validCategories.isEmpty) {
                             return DropdownButtonFormField<int>(
-                              decoration: InputDecoration(
-                                labelText: 'Category *',
-                                prefixIcon: Icon(
-                                  Icons.category,
-                                  color: accentColor,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                filled: true,
-                                fillColor: formFieldColor,
+                              decoration: _fieldDecoration(
+                                colors,
+                                label: 'Category *',
+                                icon: Icons.category,
                               ),
                               items: const [],
                               onChanged: null,
@@ -666,17 +642,10 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
 
                           return DropdownButtonFormField<int>(
                             initialValue: _selectedCategoryId,
-                            decoration: InputDecoration(
-                              labelText: 'Category *',
-                              prefixIcon: Icon(
-                                Icons.category,
-                                color: accentColor,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              filled: true,
-                              fillColor: formFieldColor,
+                            decoration: _fieldDecoration(
+                              colors,
+                              label: 'Category *',
+                              icon: Icons.category,
                             ),
                             items: validCategories.map((category) {
                               return DropdownMenuItem<int>(
@@ -695,7 +664,7 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                           );
                         },
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: spacingMedium),
 
                       // File Type and Pages Row
                       Row(
@@ -703,17 +672,11 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                           Expanded(
                             child: DropdownButtonFormField<String>(
                               initialValue: _selectedFileType,
-                              decoration: InputDecoration(
-                                labelText: 'File Type *',
-                                prefixIcon: Icon(
-                                  Icons.description,
-                                  color: accentColor,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                filled: true,
-                                fillColor: formFieldColor,
+                              isExpanded: true,
+                              decoration: _fieldDecoration(
+                                colors,
+                                label: 'File Type *',
+                                icon: Icons.description,
                               ),
                               items: const [
                                 DropdownMenuItem(
@@ -732,21 +695,17 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                               },
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: spacingMedium),
                           Expanded(
                             child: TextFormField(
                               controller: _pagesController,
-                              decoration: InputDecoration(
-                                labelText: 'Pages *',
-                                prefixIcon: Icon(
-                                  Icons.menu_book,
-                                  color: accentColor,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                filled: true,
-                                fillColor: formFieldColor,
+                              style: bodyMedium.copyWith(
+                                color: colors.onSurface,
+                              ),
+                              decoration: _fieldDecoration(
+                                colors,
+                                label: 'Pages *',
+                                icon: Icons.menu_book,
                               ),
                               keyboardType: TextInputType.number,
                               validator: (value) {
@@ -763,163 +722,46 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: spacingMedium),
 
                       // Book File Picker
-                      InkWell(
+                      _buildFilePicker(
+                        colors: colors,
+                        selected: _bookFile != null,
                         onTap: _isSubmitting ? null : _pickBookFile,
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: formFieldColor,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: _bookFile != null
-                                  ? greenColor
-                                  : accentColor.withValues(alpha: 0.2),
-                              width: 2,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                _bookFile != null
-                                    ? Icons.check_circle
-                                    : Icons.upload_file,
-                                color: _bookFile != null
-                                    ? greenColor
-                                    : accentColor,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _bookFile != null
-                                          ? 'Book File Selected'
-                                          : 'Select Book File *',
-                                      style: bodyMedium.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        color: _bookFile != null
-                                            ? greenColor
-                                            : textColor,
-                                      ),
-                                    ),
-                                    if (_bookFile != null)
-                                      Text(
-                                        _bookFile!.path.split('/').last,
-                                        style: bodySmall.copyWith(
-                                          color: secondaryTextColor,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      )
-                                    else
-                                      Text(
-                                        'PDF or EPUB file (max 50MB)',
-                                        style: bodySmall.copyWith(
-                                          color: secondaryTextColor,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              Icon(
-                                Icons.chevron_right,
-                                color: Colors.grey[400],
-                              ),
-                            ],
-                          ),
-                        ),
+                        selectedIcon: Icons.check_circle,
+                        idleIcon: Icons.upload_file,
+                        selectedLabel: 'Book File Selected',
+                        idleLabel: 'Select Book File *',
+                        selectedSubtitle: _bookFile?.path.split('/').last,
+                        idleSubtitle: 'PDF or EPUB file (max 50MB)',
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: spacingMedium),
 
                       // Cover Image Picker
-                      InkWell(
+                      _buildFilePicker(
+                        colors: colors,
+                        selected: _coverImage != null,
                         onTap: _isSubmitting ? null : _pickCoverImage,
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: formFieldColor,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: _coverImage != null
-                                  ? greenColor
-                                  : accentColor.withValues(alpha: 0.2),
-                              width: 2,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                _coverImage != null
-                                    ? Icons.check_circle
-                                    : Icons.image,
-                                color: _coverImage != null
-                                    ? greenColor
-                                    : accentColor,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _coverImage != null
-                                          ? 'Cover Image Selected'
-                                          : 'Select Cover Image (Optional)',
-                                      style: bodyMedium.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        color: _coverImage != null
-                                            ? greenColor
-                                            : textColor,
-                                      ),
-                                    ),
-                                    if (_coverImage != null)
-                                      Text(
-                                        _coverImage!.path.split('/').last,
-                                        style: bodySmall.copyWith(
-                                          color: secondaryTextColor,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      )
-                                    else
-                                      Text(
-                                        'JPG, PNG (recommended: 800x800)',
-                                        style: bodySmall.copyWith(
-                                          color: secondaryTextColor,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
-                              Icon(
-                                Icons.chevron_right,
-                                color: Colors.grey[400],
-                              ),
-                            ],
-                          ),
-                        ),
+                        selectedIcon: Icons.check_circle,
+                        idleIcon: Icons.image,
+                        selectedLabel: 'Cover Image Selected',
+                        idleLabel: 'Select Cover Image (Optional)',
+                        selectedSubtitle: _coverImage?.path.split('/').last,
+                        idleSubtitle: 'JPG, PNG (recommended: 800x800)',
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: spacingMedium),
 
                       // Description Field
                       TextFormField(
                         controller: _descriptionController,
-                        decoration: InputDecoration(
-                          labelText: 'Description *',
-                          prefixIcon: Padding(
-                            padding: const EdgeInsets.only(bottom: 60),
-                            child: Icon(Icons.description, color: accentColor),
-                          ),
+                        style: bodyMedium.copyWith(color: colors.onSurface),
+                        decoration: _fieldDecoration(
+                          colors,
+                          label: 'Description *',
+                          icon: Icons.description,
                           alignLabelWithHint: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          filled: true,
-                          fillColor: formFieldColor,
+                          prefixPadding: const EdgeInsets.only(bottom: 60),
                         ),
                         maxLines: 4,
                         validator: (value) => value?.isEmpty ?? true
@@ -933,89 +775,97 @@ class _SubmitBookDialogState extends State<SubmitBookDialog> {
 
               // Footer with Buttons
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(spacingLarge),
                 decoration: BoxDecoration(
-                  color: formFieldColor,
+                  color: colors.background,
                   borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
+                    bottomLeft: Radius.circular(borderRadiusXLarge),
+                    bottomRight: Radius.circular(borderRadiusXLarge),
                   ),
-                  border: Border(
-                    top: BorderSide(
-                      color: accentColor.withValues(alpha: 0.2),
-                      width: 1,
-                    ),
-                  ),
+                  border: Border(top: BorderSide(color: colors.border)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    OutlinedButton(
+                    SecondaryButton(
+                      label: 'Cancel',
+                      expand: false,
+                      color: colors.secondaryText,
                       onPressed: _isSubmitting
                           ? null
                           : () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        side: BorderSide(color: secondaryTextColor as Color),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        'Cancel',
-                        style: bodyMedium.copyWith(
-                          color: secondaryTextColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
                     ),
-                    const SizedBox(width: 12),
-                    ElevatedButton(
-                      onPressed: _isSubmitting ? null : _submitBook,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: accentColor,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 24,
-                          vertical: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: _isSubmitting
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
-                                ),
-                              ),
-                            )
-                          : Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.upload, size: 20),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Submit Book',
-                                  style: labelSmall.copyWith(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
+                    const SizedBox(width: spacingMedium),
+                    PrimaryButton(
+                      label: 'Submit Book',
+                      icon: Icons.upload,
+                      expand: false,
+                      busy: _isSubmitting,
+                      onPressed: _submitBook,
                     ),
                   ],
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  /// File/cover selector row — a tappable bordered tile whose accent turns to
+  /// [AppColors.success] once a file has been picked.
+  Widget _buildFilePicker({
+    required AppColors colors,
+    required bool selected,
+    required VoidCallback? onTap,
+    required IconData selectedIcon,
+    required IconData idleIcon,
+    required String selectedLabel,
+    required String idleLabel,
+    required String? selectedSubtitle,
+    required String idleSubtitle,
+  }) {
+    final accent = selected ? colors.success : colors.primary;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(borderRadiusMedium),
+      child: Container(
+        padding: const EdgeInsets.all(spacingMedium),
+        decoration: BoxDecoration(
+          color: colors.background,
+          borderRadius: BorderRadius.circular(borderRadiusMedium),
+          border: Border.all(
+            color: selected ? colors.success : colors.border,
+            width: 2,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(selected ? selectedIcon : idleIcon, color: accent),
+            const SizedBox(width: spacingMedium),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    selected ? selectedLabel : idleLabel,
+                    style: bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: selected ? colors.success : colors.onSurface,
+                    ),
+                  ),
+                  Text(
+                    selected ? (selectedSubtitle ?? '') : idleSubtitle,
+                    style: bodySmall.copyWith(color: colors.secondaryText),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: colors.secondaryText),
+          ],
         ),
       ),
     );

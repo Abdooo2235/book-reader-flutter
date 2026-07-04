@@ -9,15 +9,20 @@ class ProgressProvider extends BaseProvider {
   // Getters
   Map<int, Map<String, dynamic>> get bookProgress => _bookProgress;
   Map<String, dynamic>? getBookProgress(int bookId) => _bookProgress[bookId];
-  double? getProgressPercentage(int bookId) {
-    final progress = _bookProgress[bookId];
-    return progress?['progress_percentage']?.toDouble();
+
+  // The API returns numeric fields inconsistently (num or numeric String), so
+  // coerce defensively rather than calling toDouble/toInt on a raw String.
+  double? _asDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
   }
 
-  int? getLastPage(int bookId) {
-    final progress = _bookProgress[bookId];
-    return progress?['last_page']?.toInt();
-  }
+  double? getProgressPercentage(int bookId) =>
+      _asDouble(_bookProgress[bookId]?['progress_percentage']);
+
+  int? getLastPage(int bookId) =>
+      _asDouble(_bookProgress[bookId]?['last_page'])?.toInt();
 
   // Load all progress
   Future<void> loadAllProgress() async {

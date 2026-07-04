@@ -21,8 +21,12 @@ class Api {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
-        connectTimeout: const Duration(seconds: 30),
-        receiveTimeout: const Duration(seconds: 30),
+        // Render free tier has a ~50s cold start and book uploads can be up to
+        // 50 MB, so allow generous timeouts (incl. sendTimeout for the upload
+        // body) to avoid spurious failures on the first request after idle.
+        connectTimeout: const Duration(seconds: 60),
+        receiveTimeout: const Duration(seconds: 120),
+        sendTimeout: const Duration(seconds: 120),
       ),
     );
 
@@ -194,16 +198,37 @@ class Api {
         'cover_image': await MultipartFile.fromFile(coverImage.path),
     });
 
-    final response = await _dio.post('/books', data: formData);
+    try {
+      final response = await _dio.post('/books', data: formData);
 
-    // Handle different response types
-    if (response.data is Map<String, dynamic>) {
-      return response.data;
-    } else if (response.data is String) {
-      // Try to parse string as JSON, otherwise wrap it
-      return {'success': true, 'message': response.data};
-    } else {
-      return {'success': true, 'data': response.data};
+      // Handle different response types
+      if (response.data is Map<String, dynamic>) {
+        return response.data;
+      } else if (response.data is String) {
+        // Try to parse string as JSON, otherwise wrap it
+        return {'success': true, 'message': response.data};
+      } else {
+        return {'success': true, 'data': response.data};
+      }
+    } on DioException catch (e) {
+      // Surface the backend's real reason instead of an opaque exception.
+      // dio treats non-2xx (e.g. 422 validation, 500 upload) as a throw, so the
+      // `{success:false, message, errors}` envelope lives on e.response.data.
+      final data = e.response?.data;
+      if (data is Map<String, dynamic>) return data;
+
+      final isTimeout =
+          e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout;
+      return {
+        'success': false,
+        'message': isTimeout
+            ? 'Upload timed out. The server may be waking up — please try again.'
+            : (e.response?.statusMessage ??
+                  e.message ??
+                  'Failed to submit book'),
+      };
     }
   }
 

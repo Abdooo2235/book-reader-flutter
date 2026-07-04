@@ -3,9 +3,12 @@ import 'package:book_reader_app/helpers/ui_utils.dart';
 import 'package:book_reader_app/providers/auth_provider.dart';
 import 'package:book_reader_app/screens/auth/login_screen.dart';
 import 'package:book_reader_app/screens/main/tabs_screen.dart';
+import 'package:book_reader_app/theme/app_colors.dart';
 import 'package:book_reader_app/widgets/app_logo.dart';
+import 'package:book_reader_app/widgets/common/app_button.dart';
 import 'package:book_reader_app/widgets/text_field_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -111,8 +114,27 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
+
+    // Subtle staggered entrance for the form; slide is skipped under
+    // reduced-motion, fade is always kept.
+    var order = 0;
+    Widget stagger(Widget child) {
+      final animation = child
+          .animate(delay: (order++ * staggerStep.inMilliseconds).ms)
+          .fadeIn(duration: animationDurationMedium);
+      if (reduceMotion) return animation;
+      return animation.slideY(
+        begin: 0.1,
+        end: 0,
+        duration: animationDurationMedium,
+        curve: easeOutStrong,
+      );
+    }
+
     return Scaffold(
-      backgroundColor: scaffoldBackgroundColor,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -124,143 +146,130 @@ class _SignupScreenState extends State<SignupScreen> {
                 children: [
                   SizedBox(height: MediaQuery.of(context).size.height * 0.04),
                   // App Logo
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: spacingSmall),
-                    child: AppLogo.login(),
-                  ),
-                  const SizedBox(height: spacingMedium),
-                  TextFieldWidget(
-                    label: "Name",
-                    hintText: "Enter your full name",
-                    controller: name,
-                    validator: nameValidator,
-                    prefixWidget: Icon(Icons.person, color: primaryColor),
-                    horizontalPadding: 0,
-                    verticalPadding: spacingSmall,
-                  ),
-                  TextFieldWidget(
-                    controller: email,
-                    validator: emailValidator,
-                    label: "Email",
-                    hintText: "Enter your email address",
-                    keyboardType: TextInputType.emailAddress,
-                    prefixWidget: Icon(Icons.email, color: primaryColor),
-                    horizontalPadding: 0,
-                    verticalPadding: spacingSmall,
-                  ),
-                  TextFieldWidget(
-                    obsecureText: obsecurePassword,
-                    suffixWidget: GestureDetector(
-                      onTap: () => setState(() {
-                        obsecurePassword = !obsecurePassword;
-                      }),
-                      child: Icon(
-                        obsecurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: primaryColor,
-                      ),
-                    ),
-                    label: "Password",
-                    hintText: "Enter your password (min. 6 characters)",
-                    controller: password,
-                    validator: passwordValidator,
-                    prefixWidget: Icon(Icons.lock, color: primaryColor),
-                    horizontalPadding: 0,
-                    verticalPadding: spacingSmall,
-                  ),
-                  TextFieldWidget(
-                    obsecureText: obsecurePasswordConfirmation,
-                    suffixWidget: GestureDetector(
-                      onTap: () => setState(() {
-                        obsecurePasswordConfirmation =
-                            !obsecurePasswordConfirmation;
-                      }),
-                      child: Icon(
-                        obsecurePasswordConfirmation
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: primaryColor,
-                      ),
-                    ),
-                    label: "Confirm Password",
-                    hintText: "Re-enter your password",
-                    controller: passwordConfirmation,
-                    validator: passwordConfirmationValidator,
-                    prefixWidget: Icon(Icons.lock, color: primaryColor),
-                    horizontalPadding: 0,
-                    verticalPadding: spacingSmall,
-                  ),
-                  const SizedBox(height: spacingMedium),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: spacingMedium,
-                    ),
-                    child: Consumer<AuthProvider>(
-                      builder: (context, authProvider, _) {
-                        return SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed: authProvider.busy ? null : _handleSignup,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryColor,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  borderRadiusMedium,
-                                ),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: authProvider.busy
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.white,
-                                      ),
-                                    ),
-                                  )
-                                : Text(
-                                    "Sign Up",
-                                    style: labelMedium.copyWith(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                          ),
-                        );
-                      },
+                  stagger(
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: spacingSmall),
+                      child: AppLogo.login(),
                     ),
                   ),
                   const SizedBox(height: spacingMedium),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Already have an account?",
-                        style: bodyMedium.copyWith(color: Colors.grey[700]),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LoginScreen(),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          "Login",
-                          style: labelSmall.copyWith(
-                            color: primaryColor,
-                            fontWeight: FontWeight.bold,
-                          ),
+                  stagger(
+                    TextFieldWidget(
+                      label: "Name",
+                      hintText: "Enter your full name",
+                      controller: name,
+                      validator: nameValidator,
+                      prefixWidget: Icon(Icons.person, color: colors.primary),
+                      horizontalPadding: 0,
+                      verticalPadding: spacingSmall,
+                    ),
+                  ),
+                  stagger(
+                    TextFieldWidget(
+                      controller: email,
+                      validator: emailValidator,
+                      label: "Email",
+                      hintText: "Enter your email address",
+                      keyboardType: TextInputType.emailAddress,
+                      prefixWidget: Icon(Icons.email, color: colors.primary),
+                      horizontalPadding: 0,
+                      verticalPadding: spacingSmall,
+                    ),
+                  ),
+                  stagger(
+                    TextFieldWidget(
+                      obsecureText: obsecurePassword,
+                      suffixWidget: GestureDetector(
+                        onTap: () => setState(() {
+                          obsecurePassword = !obsecurePassword;
+                        }),
+                        child: Icon(
+                          obsecurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: colors.primary,
                         ),
                       ),
-                    ],
+                      label: "Password",
+                      hintText: "Enter your password (min. 6 characters)",
+                      controller: password,
+                      validator: passwordValidator,
+                      prefixWidget: Icon(Icons.lock, color: colors.primary),
+                      horizontalPadding: 0,
+                      verticalPadding: spacingSmall,
+                    ),
+                  ),
+                  stagger(
+                    TextFieldWidget(
+                      obsecureText: obsecurePasswordConfirmation,
+                      suffixWidget: GestureDetector(
+                        onTap: () => setState(() {
+                          obsecurePasswordConfirmation =
+                              !obsecurePasswordConfirmation;
+                        }),
+                        child: Icon(
+                          obsecurePasswordConfirmation
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: colors.primary,
+                        ),
+                      ),
+                      label: "Confirm Password",
+                      hintText: "Re-enter your password",
+                      controller: passwordConfirmation,
+                      validator: passwordConfirmationValidator,
+                      prefixWidget: Icon(Icons.lock, color: colors.primary),
+                      horizontalPadding: 0,
+                      verticalPadding: spacingSmall,
+                    ),
+                  ),
+                  const SizedBox(height: spacingMedium),
+                  stagger(
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: spacingMedium,
+                      ),
+                      child: Consumer<AuthProvider>(
+                        builder: (context, authProvider, _) {
+                          return PrimaryButton(
+                            label: "Sign Up",
+                            busy: authProvider.busy,
+                            onPressed: _handleSignup,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: spacingMedium),
+                  stagger(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Already have an account?",
+                          style: bodyMedium.copyWith(
+                            color: colors.secondaryText,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const LoginScreen(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "Login",
+                            style: labelSmall.copyWith(
+                              color: colors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                 ],

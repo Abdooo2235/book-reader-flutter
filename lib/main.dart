@@ -1,5 +1,7 @@
+import 'package:animations/animations.dart';
 import 'package:book_reader_app/helpers/consts.dart';
 import 'package:book_reader_app/helpers/navigator_key.dart';
+import 'package:book_reader_app/theme/app_colors.dart';
 import 'package:book_reader_app/providers/auth_provider.dart';
 import 'package:book_reader_app/providers/book_provider.dart';
 import 'package:book_reader_app/providers/category_provider.dart';
@@ -29,31 +31,58 @@ class MyApp extends StatelessWidget {
 
   const MyApp({super.key, required this.preferencesProvider});
 
+  // Shared page-transition theme: shared-axis motion on push/pop.
+  static const PageTransitionsTheme _pageTransitions = PageTransitionsTheme(
+    builders: {
+      TargetPlatform.android: SharedAxisPageTransitionsBuilder(
+        transitionType: SharedAxisTransitionType.horizontal,
+      ),
+      TargetPlatform.iOS: SharedAxisPageTransitionsBuilder(
+        transitionType: SharedAxisTransitionType.horizontal,
+      ),
+    },
+  );
+
+  // Maps token text styles onto the Material TextTheme (Fraunces display,
+  // Cairo body/labels) so `Theme.of(context).textTheme` is consistent app-wide.
+  TextTheme _textTheme(Color onSurface, Color muted) => TextTheme(
+    displayLarge: displayLarge.copyWith(color: onSurface),
+    displayMedium: displayMedium.copyWith(color: onSurface),
+    displaySmall: displaySmall.copyWith(color: onSurface),
+    titleLarge: labelLarge.copyWith(color: onSurface),
+    titleMedium: labelMedium.copyWith(color: onSurface),
+    titleSmall: labelSmall.copyWith(color: onSurface),
+    bodyLarge: bodyLarge.copyWith(color: onSurface),
+    bodyMedium: bodyMedium.copyWith(color: onSurface),
+    bodySmall: bodySmall.copyWith(color: muted),
+  );
+
   // Light theme
   ThemeData get lightTheme => ThemeData(
     brightness: Brightness.light,
     primaryColor: primaryColor,
     scaffoldBackgroundColor: scaffoldBackgroundColor,
     cardColor: whiteColor,
-    appBarTheme: const AppBarTheme(
+    dividerColor: borderColor,
+    extensions: const [AppColors.light],
+    pageTransitionsTheme: _pageTransitions,
+    appBarTheme: AppBarTheme(
       backgroundColor: scaffoldBackgroundColor,
       foregroundColor: blackColor,
       elevation: 0,
+      titleTextStyle: displaySmall.copyWith(color: blackColor),
     ),
     colorScheme: const ColorScheme.light(
       primary: primaryColor,
-      secondary: primaryColor,
-      surface: whiteColor,
       onPrimary: Colors.white,
+      secondary: redColor,
       onSecondary: Colors.white,
+      surface: whiteColor,
       onSurface: blackColor,
+      error: redColor,
     ),
     iconTheme: const IconThemeData(color: blackColor),
-    textTheme: const TextTheme(
-      bodyLarge: TextStyle(color: blackColor),
-      bodyMedium: TextStyle(color: blackColor),
-      bodySmall: TextStyle(color: blackColor),
-    ),
+    textTheme: _textTheme(blackColor, secondaryTextColor),
   );
 
   // Dark theme (warm palette matching light mode)
@@ -62,25 +91,26 @@ class MyApp extends StatelessWidget {
     primaryColor: primaryColorDark,
     scaffoldBackgroundColor: scaffoldBackgroundColorDark,
     cardColor: surfaceColorDark,
-    appBarTheme: const AppBarTheme(
+    dividerColor: borderColorDark,
+    extensions: const [AppColors.dark],
+    pageTransitionsTheme: _pageTransitions,
+    appBarTheme: AppBarTheme(
       backgroundColor: scaffoldBackgroundColorDark,
       foregroundColor: whiteColorDark,
       elevation: 0,
+      titleTextStyle: displaySmall.copyWith(color: whiteColorDark),
     ),
     colorScheme: const ColorScheme.dark(
       primary: primaryColorDark,
-      secondary: primaryColorDark,
+      onPrimary: Colors.black,
+      secondary: redColorDark,
+      onSecondary: Colors.black,
       surface: surfaceColorDark,
-      onPrimary: Colors.white,
-      onSecondary: Colors.white,
       onSurface: whiteColorDark,
+      error: redColorDark,
     ),
     iconTheme: const IconThemeData(color: whiteColorDark),
-    textTheme: const TextTheme(
-      bodyLarge: TextStyle(color: whiteColorDark),
-      bodyMedium: TextStyle(color: whiteColorDark),
-      bodySmall: TextStyle(color: whiteColorDark),
-    ),
+    textTheme: _textTheme(whiteColorDark, secondaryTextColorDark),
   );
 
   @override

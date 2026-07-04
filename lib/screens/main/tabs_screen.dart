@@ -5,6 +5,8 @@ import 'package:book_reader_app/screens/main/favourite_screen.dart';
 import 'package:book_reader_app/screens/main/home_screen.dart';
 import 'package:book_reader_app/screens/main/library_screen.dart';
 import 'package:book_reader_app/screens/main/profile_screen.dart';
+import 'package:book_reader_app/theme/app_colors.dart';
+import 'package:book_reader_app/widgets/common/pressable_scale.dart';
 import 'package:book_reader_app/widgets/submit_book_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -28,6 +30,29 @@ class _TabsScreenState extends State<TabsScreen> {
     ProfileScreen(),
   ];
 
+  static const List<_NavItemData> _navItems = [
+    _NavItemData(
+      label: 'Home',
+      icon: CupertinoIcons.home,
+      activeIcon: CupertinoIcons.house_fill,
+    ),
+    _NavItemData(
+      label: 'Library',
+      icon: CupertinoIcons.book,
+      activeIcon: CupertinoIcons.book_fill,
+    ),
+    _NavItemData(
+      label: 'Favourites',
+      icon: CupertinoIcons.heart,
+      activeIcon: CupertinoIcons.heart_fill,
+    ),
+    _NavItemData(
+      label: 'Profile',
+      icon: CupertinoIcons.person,
+      activeIcon: CupertinoIcons.person_fill,
+    ),
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -40,25 +65,17 @@ class _TabsScreenState extends State<TabsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark
-        ? scaffoldBackgroundColorDark
-        : scaffoldBackgroundColor;
-    final navBarColor = isDark ? surfaceColorDark : whiteColor;
-    final activeColor = isDark ? primaryColorDark : primaryColor;
 
     return Consumer<AuthProvider>(
       builder: (context, authConsumer, _) {
         return Scaffold(
-          // drawer: CustomDrawer(),
           appBar: AppBar(
-            backgroundColor: backgroundColor,
+            backgroundColor: colors.background,
             toolbarHeight: 0,
             systemOverlayStyle: SystemUiOverlayStyle(
-              statusBarColor: isDark
-                  ? scaffoldBackgroundColorDark
-                  : scaffoldBackgroundColor,
-
+              statusBarColor: colors.background,
               statusBarIconBrightness: isDark
                   ? Brightness.light
                   : Brightness.dark,
@@ -67,88 +84,133 @@ class _TabsScreenState extends State<TabsScreen> {
           ),
           body: IndexedStack(index: currentIndex, children: screens),
           floatingActionButton: currentIndex == 0
-              ? Builder(
-                  builder: (context) {
-                    return FloatingActionButton(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => const SubmitBookDialog(),
-                        );
-                      },
-                      backgroundColor: activeColor,
-                      child: const Icon(Icons.add, color: Colors.white),
+              ? FloatingActionButton(
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => const SubmitBookDialog(),
                     );
                   },
+                  backgroundColor: colors.primary,
+                  child: Icon(Icons.add, color: colors.onPrimary),
                 )
               : null,
           bottomNavigationBar: Container(
             decoration: BoxDecoration(
-              color: navBarColor,
+              color: colors.surface,
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
+                top: Radius.circular(borderRadiusXLarge),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withAlpha(isDark ? 40 : 13),
+                  color: colors.shadow,
                   blurRadius: 10,
                   offset: const Offset(0, -5),
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(20),
-              ),
-              child: BottomNavigationBar(
-                backgroundColor: navBarColor,
-                elevation: 0,
-                selectedItemColor: activeColor,
-                unselectedItemColor: activeColor.withAlpha(102),
-                selectedLabelStyle: labelSmall.copyWith(
-                  color: activeColor,
-                  fontWeight: FontWeight.w700,
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: spacingSmall,
+                  vertical: spacingSmall + 2,
                 ),
-                unselectedLabelStyle: labelSmall.copyWith(
-                  color: activeColor.withAlpha(102),
+                child: Row(
+                  children: List.generate(_navItems.length, (index) {
+                    return Expanded(
+                      child: _NavItem(
+                        data: _navItems[index],
+                        selected: currentIndex == index,
+                        color: colors.primary,
+                        inactiveColor: colors.secondaryText,
+                        onTap: () => setState(() => currentIndex = index),
+                      ),
+                    );
+                  }),
                 ),
-                currentIndex: currentIndex,
-                onTap: (value) {
-                  setState(() {
-                    currentIndex = value;
-                  });
-                },
-                items: [
-                  BottomNavigationBarItem(
-                    label: "Home",
-                    icon: Icon(CupertinoIcons.home),
-                    activeIcon: Icon(CupertinoIcons.house_fill),
-                    backgroundColor: navBarColor,
-                  ),
-                  BottomNavigationBarItem(
-                    label: "Library",
-                    icon: Icon(CupertinoIcons.book),
-                    activeIcon: Icon(CupertinoIcons.book_fill),
-                    backgroundColor: navBarColor,
-                  ),
-                  BottomNavigationBarItem(
-                    label: "Favourites",
-                    icon: Icon(CupertinoIcons.heart),
-                    activeIcon: Icon(CupertinoIcons.heart_fill),
-                    backgroundColor: navBarColor,
-                  ),
-                  BottomNavigationBarItem(
-                    label: "Profile",
-                    icon: Icon(CupertinoIcons.person),
-                    activeIcon: Icon(CupertinoIcons.person_fill),
-                    backgroundColor: navBarColor,
-                  ),
-                ],
               ),
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _NavItemData {
+  const _NavItemData({
+    required this.label,
+    required this.icon,
+    required this.activeIcon,
+  });
+
+  final String label;
+  final IconData icon;
+  final IconData activeIcon;
+}
+
+/// A single animated bottom-nav destination: the active tab grows a tinted pill,
+/// swaps to its filled icon, and scales up slightly. Reduced-motion still gets
+/// the color/pill change — only the scale is gated.
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.data,
+    required this.selected,
+    required this.color,
+    required this.inactiveColor,
+    required this.onTap,
+  });
+
+  final _NavItemData data;
+  final bool selected;
+  final Color color;
+  final Color inactiveColor;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final activeColor = selected ? color : inactiveColor;
+
+    return PressableScale(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: animationDurationShort,
+        curve: easeOutStrong,
+        margin: const EdgeInsets.symmetric(horizontal: spacingSmall / 2),
+        padding: const EdgeInsets.symmetric(vertical: spacingSmall),
+        decoration: BoxDecoration(
+          color: selected ? color.withValues(alpha: 0.12) : Colors.transparent,
+          borderRadius: BorderRadius.circular(borderRadiusMedium),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedScale(
+              scale: selected && !reduceMotion ? 1.12 : 1.0,
+              duration: animationDurationShort,
+              curve: easeOutStrong,
+              child: Icon(
+                selected ? data.activeIcon : data.icon,
+                color: activeColor,
+                size: 24,
+              ),
+            ),
+            const SizedBox(height: spacingSmall / 2),
+            Text(
+              data.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: bodySmall.copyWith(
+                color: activeColor,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
